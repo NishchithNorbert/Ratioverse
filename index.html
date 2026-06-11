@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RatioVerse — Ratio Analysis, Alive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#070B16;          /* page background */
+  --ink-2:#0C1224;        /* raised surface */
+  --glass:rgba(255,255,255,.045);
+  --glass-2:rgba(255,255,255,.08);
+  --line:rgba(255,255,255,.09);
+  --teal:#3DD9C0;         /* primary accent — improvement, action */
+  --teal-dim:rgba(61,217,192,.14);
+  --gold:#E9B44C;         /* attention, XP, highlights */
+  --gold-dim:rgba(233,180,76,.14);
+  --red:#F2655C;          /* deterioration, risk */
+  --red-dim:rgba(242,101,92,.14);
+  --blue:#6FA8FF;
+  --txt:#EAF0FA;
+  --txt-2:#9AA7BF;
+  --txt-3:#5C6A85;
+  --disp:'Fraunces',serif;
+  --body:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --r:18px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--ink);color:var(--txt);font-family:var(--body);
+  font-size:16px;line-height:1.6;overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgba(61,217,192,.07), transparent 60%),
+    radial-gradient(800px 500px at -10% 25%, rgba(111,168,255,.06), transparent 60%),
+    radial-gradient(700px 600px at 50% 110%, rgba(233,180,76,.05), transparent 60%);
+}
+::selection{background:var(--teal);color:#04211C}
+h1,h2,h3,.disp{font-family:var(--disp)}
+.mono{font-family:var(--mono)}
+button{font-family:var(--body);cursor:pointer;border:none;background:none;color:inherit}
+input[type=range]{width:100%;accent-color:var(--teal);cursor:pointer}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;
+  padding:10px 20px;background:rgba(7,11,22,.75);backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--line);
+}
+.logo{font-family:var(--disp);font-weight:700;font-size:1.15rem;letter-spacing:.3px;white-space:nowrap}
+.logo em{color:var(--teal);font-style:normal}
+.nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1}
+.nav::-webkit-scrollbar{display:none}
+.nav button{
+  padding:7px 13px;border-radius:999px;font-size:.85rem;font-weight:600;color:var(--txt-2);
+  white-space:nowrap;transition:all .25s;
+}
+.nav button:hover{color:var(--txt);background:var(--glass)}
+.nav button.on{color:#04211C;background:var(--teal)}
+.hud{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.hud .lvl{font-family:var(--mono);font-size:.75rem;color:var(--gold);font-weight:700}
+.xpwrap{width:90px;height:7px;border-radius:99px;background:var(--glass-2);overflow:hidden}
+.xpbar{height:100%;width:0%;background:linear-gradient(90deg,var(--gold),#f5d488);border-radius:99px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.streak{font-size:.8rem;color:var(--txt-2)}
+
+/* ---------- layout ---------- */
+.page{display:none;max-width:1100px;margin:0 auto;padding:36px 20px 100px;animation:pagein .5s cubic-bezier(.2,.8,.2,1)}
+.page.on{display:block}
+@keyframes pagein{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);margin-bottom:10px}
+.h-page{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:600;line-height:1.15;margin-bottom:10px}
+.sub{color:var(--txt-2);max-width:640px;margin-bottom:30px}
+
+/* ---------- glass cards ---------- */
+.card{
+  background:var(--glass);border:1px solid var(--line);border-radius:var(--r);
+  padding:22px;backdrop-filter:blur(10px);
+}
+.card+.card{margin-top:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:820px){.grid2,.grid3{grid-template-columns:1fr}}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:12px;
+  font-weight:600;font-size:.9rem;transition:all .2s;border:1px solid transparent;
+}
+.btn-pri{background:var(--teal);color:#04211C}
+.btn-pri:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(61,217,192,.35)}
+.btn-ghost{border-color:var(--line);color:var(--txt)}
+.btn-ghost:hover{background:var(--glass)}
+.btn-gold{background:var(--gold);color:#241A04}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* ---------- chips & pills ---------- */
+.pill{display:inline-block;padding:3px 11px;border-radius:99px;font-size:.72rem;font-weight:700;font-family:var(--mono);letter-spacing:.04em}
+.pill.up{background:var(--teal-dim);color:var(--teal)}
+.pill.down{background:var(--red-dim);color:var(--red)}
+.pill.flat{background:var(--glass-2);color:var(--txt-2)}
+.pill.gold{background:var(--gold-dim);color:var(--gold)}
+
+/* ---------- hero ---------- */
+.hero{padding:64px 0 30px;text-align:left}
+.hero h1{  font-size:clamp(2.2rem,6vw,3.8rem);font-weight:700;line-height:1.08;letter-spacing:-.01em;margin-bottom:18px}
+.hero h1 .accent{color:var(--teal)}
+.hero .story{
+  margin-top:34px;border-left:3px solid var(--gold);padding:20px 24px;
+  background:linear-gradient(90deg,var(--gold-dim),transparent 70%);border-radius:0 var(--r) var(--r) 0;
+}
+.hero .story p{font-family:var(--disp);font-size:1.25rem;line-height:1.5}
+.choice-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.choice{
+  padding:11px 16px;border:1px solid var(--line);border-radius:14px;font-size:.9rem;
+  color:var(--txt);background:var(--glass);transition:all .2s;text-align:left;
+}
+.choice:hover{border-color:var(--teal);transform:translateY(-1px)}
+.choice.picked-right{border-color:var(--teal);background:var(--teal-dim);color:var(--teal)}
+.choice.picked-wrong{border-color:var(--red);background:var(--red-dim);color:var(--red)}
+.choice.show-right{border-color:var(--teal);color:var(--teal)}
+.reveal{
+  margin-top:14px;padding:16px 18px;border-radius:14px;background:var(--ink-2);
+  border:1px solid var(--line);display:none;animation:pagein .45s;
+}
+.reveal.on{display:block}
+.modecards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:40px}
+.modecard{cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.modecard:hover{transform:translateY(-4px);border-color:var(--teal)}
+.modecard .ic{font-size:1.6rem;margin-bottom:10px}
+.modecard h3{font-size:1.05rem;margin-bottom:6px}
+.modecard p{font-size:.85rem;color:var(--txt-2)}
+
+/* ---------- learn map ---------- */
+.groupbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.groupbar button{
+  padding:8px 14px;border-radius:12px;border:1px solid var(--line);font-size:.84rem;
+  font-weight:600;color:var(--txt-2);transition:all .2s;
+}
+.groupbar button.on{background:var(--glass-2);color:var(--txt);border-color:var(--teal)}
+.ratio-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.ratio-card{cursor:pointer;transition:all .25s}
+.ratio-card:hover{transform:translateY(-3px);border-color:var(--gold)}
+.ratio-card .tag{font-family:var(--mono);font-size:.68rem;color:var(--txt-3);letter-spacing:.1em;text-transform:uppercase}
+.ratio-card h3{margin:6px 0 4px;font-size:1.1rem}
+.ratio-card .hook{font-size:.85rem;color:var(--txt-2);font-style:italic}
+.ratio-card .done{position:absolute;top:14px;right:14px;color:var(--teal);font-size:1rem;display:none}
+.ratio-card.complete{border-color:rgba(61,217,192,.4)}
+.ratio-card.complete .done{display:block}
+.ratio-card{position:relative}
+
+/* ---------- lesson ---------- */
+.lesson-step{display:none;animation:pagein .4s}
+.lesson-step.on{display:block}
+.stepdots{display:flex;gap:6px;margin:18px 0}
+.stepdots span{width:26px;height:4px;border-radius:99px;background:var(--glass-2);transition:background .3s}
+.stepdots span.on{background:var(--teal)}
+.storytext{font-family:var(--disp);font-size:1.3rem;line-height:1.55;max-width:640px}
+.formula-box{
+  font-family:var(--mono);font-size:1.05rem;text-align:center;padding:22px;margin:18px 0;
+  background:var(--ink-2);border:1px solid var(--gold);border-radius:var(--r);color:var(--gold);
+  box-shadow:0 0 40px rgba(233,180,76,.12);
+}
+.formula-box .fl{font-size:.72rem;color:var(--txt-3);letter-spacing:.15em;text-transform:uppercase;display:block;margin-bottom:8px}
+.analogy{display:flex;gap:14px;align-items:flex-start;padding:16px;border-radius:14px;background:var(--glass);border:1px solid var(--line);margin-top:14px}
+.analogy .em{font-size:1.7rem;line-height:1}
+.simgrid{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:start}
+@media(max-width:820px){.simgrid{grid-template-columns:1fr}}
+.slider-row{margin-bottom:16px}
+.slider-row label{display:flex;justify-content:space-between;font-size:.84rem;color:var(--txt-2);margin-bottom:5px}
+.slider-row label b{font-family:var(--mono);color:var(--txt)}
+.bigval{font-family:var(--mono);font-size:2.6rem;font-weight:700;line-height:1;transition:color .3s}
+.bigval-label{font-size:.78rem;color:var(--txt-3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.gauge{position:relative;height:10px;border-radius:99px;background:var(--glass-2);margin:16px 0 6px;overflow:hidden}
+.gauge .fill{position:absolute;inset:0 auto 0 0;width:50%;border-radius:99px;background:linear-gradient(90deg,var(--teal),#8be8d8);transition:width .4s cubic-bezier(.2,.8,.2,1)}
+.gauge-cap{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.68rem;color:var(--txt-3)}
+.simnote{font-size:.85rem;color:var(--txt-2);margin-top:12px;min-height:42px}
+.cmp-table{width:100%;border-collapse:collapse;font-size:.88rem}
+.cmp-table th{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--txt-3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+.cmp-table td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
+.cmp-table td.num{font-family:var(--mono);font-weight:700;white-space:nowrap}
+.cmp-table tr:last-child td{border-bottom:none}
+.lesson-nav{display:flex;justify-content:space-between;margin-top:26px;gap:10px}
+
+/* ---------- lab ---------- */
+.lab-grid{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
+@media(max-width:900px){.lab-grid{grid-template-columns:1fr}}
+.ratio-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.rcell{padding:12px;border-radius:14px;background:var(--glass);border:1px solid var(--line);transition:all .3s}
+.rcell .rl{font-size:.68rem;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--txt-3)}
+.rcell .rv{font-family:var(--mono);font-weight:700;font-size:1.15rem;margin:3px 0}
+.rcell .rd{font-family:var(--mono);font-size:.7rem}
+.rcell.up{border-color:rgba(61,217,192,.5);background:var(--teal-dim)}
+.rcell.up .rd{color:var(--teal)}
+.rcell.down{border-color:rgba(242,101,92,.5);background:var(--red-dim)}
+.rcell.down .rd{color:var(--red)}
+.ripple-list{margin-top:16px}
+.ripple{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px dashed var(--line);font-size:.86rem;color:var(--txt-2);animation:pagein .4s}
+.ripple .arrow{color:var(--gold);font-family:var(--mono)}
+
+/* ---------- cause-effect chain ---------- */
+.chain{display:flex;flex-direction:column;gap:0;max-width:520px;margin:18px auto}
+.chain-node{
+  padding:13px 18px;border-radius:14px;background:var(--glass);border:1px solid var(--line);
+  text-align:center;font-size:.92rem;opacity:.25;transform:translateY(8px);transition:all .5s cubic-bezier(.2,.8,.2,1);
+}
+.chain-node.lit{opacity:1;transform:none;border-color:var(--gold);box-shadow:0 0 24px rgba(233,180,76,.12)}
+.chain-arrow{text-align:center;color:var(--gold);font-size:1.1rem;opacity:.25;transition:opacity .5s;padding:2px 0}
+.chain-arrow.lit{opacity:1}
+
+/* ---------- CEO mode ---------- */
+.ceo-top{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
+.kpi{padding:12px 14px;border-radius:14px;background:var(--glass);border:1px solid var(--line)}
+.kpi .kl{font-size:.66rem;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--txt-3)}
+.kpi .kv{font-family:var(--mono);font-weight:700;font-size:1.25rem;margin-top:2px}
+.decision{cursor:pointer;transition:all .2s}
+.decision:hover{border-color:var(--teal);transform:translateY(-2px)}
+.decision h4{font-size:.98rem;margin-bottom:4px}
+.decision p{font-size:.82rem;color:var(--txt-2)}
+.news{font-size:.9rem;padding:10px 14px;border-left:3px solid var(--blue);background:var(--glass);border-radius:0 12px 12px 0;margin-top:10px;animation:pagein .5s}
+.news.bad{border-left-color:var(--red)}
+.news.good{border-left-color:var(--teal)}
+.news .src{font-family:var(--mono);font-size:.66rem;color:var(--txt-3);letter-spacing:.1em;text-transform:uppercase;display:block}
+.spark{width:100%;height:90px}
+
+/* ---------- detective / quiz ---------- */
+.excerpt{font-family:var(--disp);font-size:1.02rem;line-height:1.7;padding:20px;background:var(--ink-2);border:1px solid var(--line);border-radius:var(--r);position:relative}
+.excerpt::before{content:"ANNUAL REPORT — EXTRACT";font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;color:var(--txt-3);display:block;margin-bottom:10px}
+.bosswrap{text-align:center;padding:10px 0 20px}
+.bosshp{height:14px;border-radius:99px;background:var(--glass-2);overflow:hidden;max-width:420px;margin:10px auto}
+.bosshp .hp{height:100%;width:100%;background:linear-gradient(90deg,var(--red),#ff9d97);transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.qtext{font-size:1.1rem;font-weight:600;margin:18px 0 6px}
+
+/* ---------- tutor ---------- */
+.tutor-log{max-height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:6px 2px;margin-bottom:12px}
+.msg{max-width:85%;padding:11px 15px;border-radius:16px;font-size:.92rem;line-height:1.55;white-space:pre-wrap}
+.msg.user{align-self:flex-end;background:var(--teal-dim);border:1px solid rgba(61,217,192,.3);border-bottom-right-radius:4px}
+.msg.bot{align-self:flex-start;background:var(--glass);border:1px solid var(--line);border-bottom-left-radius:4px}
+.tutor-input{display:flex;gap:10px}
+.tutor-input input{
+  flex:1;padding:12px 16px;border-radius:14px;border:1px solid var(--line);background:var(--glass);
+  color:var(--txt);font-family:var(--body);font-size:.92rem;outline:none;
+}
+.tutor-input input:focus{border-color:var(--teal)}
+
+/* ---------- toast & misc ---------- */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translate(-50%,80px);z-index:99;
+  padding:12px 22px;border-radius:14px;background:var(--ink-2);border:1px solid var(--gold);
+  color:var(--gold);font-weight:600;font-size:.9rem;transition:transform .45s cubic-bezier(.2,.8,.2,1);
+  box-shadow:0 10px 40px rgba(0,0,0,.5);
+}
+.toast.on{transform:translate(-50%,0)}
+.back{font-size:.84rem;color:var(--txt-2);margin-bottom:18px;display:inline-flex;gap:6px;align-items:center}
+.back:hover{color:var(--teal)}
+.divider{height:1px;background:var(--line);margin:22px 0}
+.muted{color:var(--txt-2);font-size:.86rem}
+.tiny{color:var(--txt-3);font-size:.74rem;margin-top:10px}
+.hl-t{color:var(--teal);font-weight:600}
+.hl-g{color:var(--gold);font-weight:600}
+.hl-r{color:var(--red);font-weight:600}
+canvas{max-width:100%}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:640px){
+  .hud .streak{display:none}
+  .page{padding:24px 14px 90px}
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== TOP BAR ===================== -->
+<div class="topbar">
+  <div class="logo">Ratio<em>Verse</em></div>
+  <div class="nav" id="nav"></div>
+  <div class="hud">
+    <span class="lvl" id="hudLvl">LV 1</span>
+    <div class="xpwrap"><div class="xpbar" id="hudXp"></div></div>
+    <span class="streak" id="hudStreak">🔥 1</span>
+  </div>
+</div>
+
+<!-- ===================== HOME ===================== -->
+<section class="page on" id="pg-home">
+  <div class="hero">
+    <div class="eyebrow">ACCA FR · Interpretation of Financial Statements</div>
+    <h1>Numbers are boring.<br><span class="accent">Stories about money</span> are not.</h1>
+    <p class="sub">Every ratio is a question someone once asked about a business. Learn to ask them yourself — and you'll never look at an annual report the same way again.</p>
+
+    <div class="story card">
+      <p>Two coffee shops in Kochi each earn <span class="hl-g">₹10 lakh</span> profit a year.</p>
+      <p style="margin-top:8px">One just sold for <b>₹1 crore</b>. The other sold for <b>₹3 crore</b>.</p>
+      <p style="margin-top:8px;color:var(--txt-2);font-size:1.05rem">Same profit. Triple the price. Why would anyone pay that?</p>
+      <div class="choice-row" id="heroChoices">
+        <button class="choice" data-i="0">The buyer made a mistake</button>
+        <button class="choice" data-i="1">The second shop is expected to grow much faster</button>
+        <button class="choice" data-i="2">Coffee prices will rise</button>
+      </div>
+      <div class="reveal" id="heroReveal">
+        <p><b class="hl-t">You just discovered the P/E ratio.</b> Investors don't pay for today's profit — they pay for <i>expectations of future profit</i>. Shop one trades at 10× earnings; shop two at 30×. Maybe shop two has a viral brand, three new outlets opening, a franchising deal. The price of a business is a bet on its story. <span class="hl-g">+25 XP</span></p>
+      </div>
+    </div>
+
+    <div class="modecards" id="modecards"></div>
+    <p class="tiny">Company figures across this site are illustrative teaching approximations inspired by recent published accounts — always check the latest annual report for live analysis.</p>
+  </div>
+</section>
+
+<!-- ===================== LEARN ===================== -->
+<section class="page" id="pg-learn">
+  <div class="eyebrow">Learning Path</div>
+  <h2 class="h-page">Fifteen ratios. Fifteen stories.</h2>
+  <p class="sub">Each lesson starts with a situation, asks you to predict, then reveals the formula — only once you already understand it. Finish a lesson to earn XP.</p>
+  <div class="groupbar" id="groupbar"></div>
+  <div class="ratio-list" id="ratioList"></div>
+</section>
+
+<!-- ===================== LESSON ===================== -->
+<section class="page" id="pg-lesson">
+  <button class="back" onclick="go('learn')">← Back to path</button>
+  <div id="lessonRoot"></div>
+</section>
+
+<!-- ===================== LAB ===================== -->
+<section class="page" id="pg-lab">
+  <div class="eyebrow">The Lab</div>
+  <h2 class="h-page">Pull a lever. Watch everything move.</h2>
+  <p class="sub">This is <b>Meridian Retail plc</b> — a healthy mid-size retailer. Change one decision at a time and watch the chain reaction across all fifteen ratios. Nothing in a business moves alone.</p>
+  <div class="lab-grid">
+    <div class="card" id="labControls"></div>
+    <div>
+      <div class="ratio-board" id="labBoard"></div>
+      <div class="card" style="margin-top:16px">
+        <div class="eyebrow" style="margin-bottom:6px">Chain reaction</div>
+        <div class="ripple-list" id="labRipples"><p class="muted">Move a slider to see cause and effect…</p></div>
+        <button class="btn btn-ghost" style="margin-top:14px" onclick="labReset()">↺ Reset company</button>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:22px">
+    <div class="eyebrow" style="margin-bottom:6px">Cause-and-effect map</div>
+    <p class="muted">Press play to watch one decision propagate through a business.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0" id="chainPickers"></div>
+    <div class="chain" id="chainView"></div>
+  </div>
+</section>
+
+<!-- ===================== CEO ===================== -->
+<section class="page" id="pg-ceo">
+  <div class="eyebrow">CEO Mode</div>
+  <h2 class="h-page" id="ceoTitle">You run the company now.</h2>
+  <p class="sub">Six years at the helm of <b>Horizon Foods plc</b>. Every choice rewrites the statements, the ratios, the credit rating and the share price. Survive — or learn why you didn't.</p>
+  <div id="ceoRoot"></div>
+</section>
+
+<!-- ===================== INVESTOR ===================== -->
+<section class="page" id="pg-investor">
+  <div class="eyebrow">Investor Mode</div>
+  <h2 class="h-page">Where would you put ₹1,00,000?</h2>
+  <p class="sub">Head-to-head matchups. There is no single right answer — only trade-offs between growth, income, risk and price. Pick a side, then see how an analyst would frame it.</p>
+  <div id="invRoot"></div>
+</section>
+
+<!-- ===================== DETECTIVE ===================== -->
+<section class="page" id="pg-detective">
+  <div class="eyebrow">Detective Mode</div>
+  <h2 class="h-page">The numbers always confess.</h2>
+  <p class="sub">Read each annual-report extract like an examiner. Diagnose the condition hiding in the figures.</p>
+  <div id="detRoot"></div>
+</section>
+
+<!-- ===================== QUIZ ===================== -->
+<section class="page" id="pg-quiz">
+  <div class="eyebrow">Boss Battle</div>
+  <h2 class="h-page">The Examiner awaits.</h2>
+  <p class="sub">Ten questions. Every correct answer lands a hit. Defeat the Examiner to earn the final achievement.</p>
+  <div id="quizRoot"></div>
+</section>
+
+<!-- ===================== INSIGHTS ===================== -->
+<section class="page" id="pg-insights">
+  <div class="eyebrow">Advanced Insights</div>
+  <h2 class="h-page">Where ratios stop being formulas.</h2>
+  <p class="sub">The connections examiners reward and analysts get paid for.</p>
+  <div id="insRoot"></div>
+</section>
+
+<!-- ===================== TUTOR ===================== -->
+<section class="page" id="pg-tutor">
+  <div class="eyebrow">AI Mentor</div>
+  <h2 class="h-page">Meet Priya, your finance mentor.</h2>
+  <p class="sub">Priya never gives away answers. She asks the question that makes you find them. Try: <i>"Why is Titan's P/E so high?"</i> or <i>"My current ratio is 4 — isn't that great?"</i></p>
+  <div class="card">
+    <div class="tutor-log" id="tutorLog">
+      <div class="msg bot">Hello! I'm Priya 🌿 Ask me anything about ratios — but be warned, I'll probably answer with a question. That's how understanding is built. What are you working on?</div>
+    </div>
+    <div class="tutor-input">
+      <input id="tutorBox" placeholder="Ask about any ratio, company, or scenario…" onkeydown="if(event.key==='Enter')tutorSend()">
+      <button class="btn btn-pri" onclick="tutorSend()">Send</button>
+    </div>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+<script>
+/* ==================================================== */
+/* STATE, GAMIFICATION, ROUTER                          */
+/* ==================================================== */
+const S = { xp:0, lvl:1, done:new Set(), ach:new Set(), heroDone:false };
+const LVLS=[0,100,250,450,700,1000,1400,1900,2500];
+function addXP(n,why){
+  S.xp+=n;
+  while(S.lvl<LVLS.length && S.xp>=LVLS[S.lvl]) { S.lvl++; toast(`⭐ Level up! You are now Level ${S.lvl}`); }
+  const lo=LVLS[S.lvl-1], hi=LVLS[S.lvl]||LVLS.at(-1)+600;
+  document.getElementById('hudXp').style.width=Math.min(100,(S.xp-lo)/(hi-lo)*100)+'%';
+  document.getElementById('hudLvl').textContent='LV '+S.lvl;
+  if(why) toast(`+${n} XP — ${why}`);
+}
+function ach(id,label){ if(S.ach.has(id))return; S.ach.add(id); setTimeout(()=>toast('🏆 Achievement: '+label),900); }
+let toastT;
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2600);
+}
+const PAGES=[['home','Home'],['learn','Learn'],['lab','The Lab'],['ceo','CEO Mode'],['investor','Investor'],['detective','Detective'],['quiz','Boss Battle'],['insights','Insights'],['tutor','AI Mentor']];
+const nav=document.getElementById('nav');
+PAGES.forEach(([id,l])=>{ const b=document.createElement('button'); b.textContent=l; b.id='nb-'+id; b.onclick=()=>go(id); nav.appendChild(b); });
+function go(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById('pg-'+id).classList.add('on');
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.id==='nb-'+id));
+  window.scrollTo({top:0});
+  if(id==='ceo'&&!CEO.started) ceoStart();
+}
+go('home');
+
+/* hero predict-before-reveal */
+document.getElementById('heroChoices').addEventListener('click',e=>{
+  const b=e.target.closest('.choice'); if(!b||S.heroDone)return;
+  S.heroDone=true;
+  document.querySelectorAll('#heroChoices .choice').forEach(c=>{
+    if(c.dataset.i==='1')c.classList.add(c===b?'picked-right':'show-right');
+    else if(c===b)c.classList.add('picked-wrong');
+  });
+  document.getElementById('heroReveal').classList.add('on');
+  addXP(25,'First insight unlocked'); ach('first','The First Question');
+});
+
+/* mode cards on home */
+const MODES=[
+  ['📖','learn','Learn the ratios','Story-first lessons. Predict, then see the formula.'],
+  ['🧪','lab','The Lab','Pull levers on a live company. Watch chain reactions.'],
+  ['👔','ceo','CEO Mode','Run a company for six years. Try not to bankrupt it.'],
+  ['💼','investor','Investor Mode','Tesla vs Coca-Cola. Reliance vs TCS. You choose.'],
+  ['🔍','detective','Detective Mode','Diagnose overtrading and liquidity crises from real-style extracts.'],
+  ['⚔️','quiz','Boss Battle','Face the Examiner. Ten questions, one reputation.'],
+];
+document.getElementById('modecards').innerHTML=MODES.map(m=>
+  `<div class="card modecard" onclick="go('${m[1]}')"><div class="ic">${m[0]}</div><h3>${m[2]}</h3><p>${m[3]}</p></div>`).join('');
+
+/* helpers */
+const fmt={
+  pct:v=>v.toFixed(1)+'%', x:v=>v.toFixed(2)+'×', x1:v=>v.toFixed(1)+'×',
+  days:v=>Math.round(v)+' days', money:v=>'₹'+v.toFixed(2), times:v=>v.toFixed(1)+' times'
+};
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ==================================================== */
+/* RATIO LESSON DATA                                    */
+/* ==================================================== */
+const GROUPS=[['prof','Profitability'],['liq','Liquidity'],['eff','Efficiency'],['gear','Gearing & Risk'],['inv','Investor Ratios']];
+const RATIOS=[
+{ id:'gpm', g:'prof', name:'Gross Profit Margin', hook:'"The first cut of the deal."',
+  story:{t:'A street vendor buys mangoes at ₹60 a kilo and sells them at ₹100. Her neighbour buys the same mangoes at ₹60 but, stuck beside three rival carts, can only charge ₹70.',
+    q:'Before counting rent, helpers or cart repairs — who is playing a winnable game?', o:['The neighbour — ₹70 is still profit','The first vendor — ₹40 per kilo leaves room for every other cost','Both equal — same mangoes'], a:1,
+    r:'The first vendor keeps <b>₹40 of every ₹100</b> just from the buy-sell spread; the neighbour keeps ₹10. Every other cost — rent, wages, lighting — must be paid out of that spread. This raw trading margin, before any overheads, is the <b>gross profit margin</b>. If it is too thin, no amount of cost-cutting downstream can save the business.'},
+  f:'Gross margin = Gross profit ÷ Revenue × 100', fl:'Gross profit = Revenue − Cost of sales',
+  an:{e:'🥭',t:'Gross margin is the gap between what you pay for the mangoes and what customers pay you — the deal itself. Operating margin is what survives after the cart, the helper and the parking fine. A business can ruin a great gross margin with bloated overheads, but it can never fix a terrible one with thrift.'},
+  sim:{inputs:[['Revenue (₹L)',100,1000,400,10],['Cost of sales (₹L)',60,900,260,10]],
+    comp:v=>{const r=(v[0]-Math.min(v[1],v[0]))/v[0]*100;return{val:fmt.pct(r),pct:clamp(r/70*100,2,100),
+      note:r>50?'Luxury / software territory — the product sells for far more than it costs to make.':r>25?'Healthy trading spread with room for overheads and profit.':r>10?'Thin. Overheads must be ruthlessly controlled — supermarket discipline required.':'Barely any spread on the core deal. Strategy problem, not an efficiency problem.'}}},
+  co:[['Apple','~46%','An iPhone sells for roughly double its build cost — that gap is the brand.'],
+      ['Nestlé India','~55%+','Maggi and KitKat cost little to make and command loyal prices.'],
+      ['Walmart','~24%','Deliberately thin: pass savings to customers, win on volume.'],
+      ['Airlines','~5–15% and volatile','Fuel is the cost of sales — margins swing with every oil price move.']],
+  ins:'Compare gross and operating margin together: gross falling = pricing pressure or input-cost inflation (a market problem); gross stable while operating falls = overheads ballooning (a management problem). Locating WHERE the margin leaked is a classic exam mark.'},
+
+{ id:'roce', g:'prof', name:'ROCE', hook:'"The restaurant question."',
+  story:{t:'Your aunt invests ₹50 lakh in a restaurant — kitchen, furniture, deposit, stock. After a year of 14-hour days, it makes ₹3 lakh operating profit. A fixed deposit at the bank would have paid ₹3.75 lakh for doing nothing.',
+    q:'Was the restaurant a good use of her capital?', o:['Yes — ₹3 lakh profit is profit','No — the capital earned less than a risk-free deposit','Impossible to say'], a:1,
+    r:'Profit only means something <b>relative to the money tied up earning it</b>. ₹3 lakh on ₹50 lakh is a 6% return — below a fixed deposit, with far more risk and effort. This "return per rupee of capital" instinct is exactly what ROCE measures, and it is the single most important ratio in FR interpretation.'},
+  f:'ROCE = Operating profit (PBIT) ÷ Capital employed × 100', fl:'Capital employed = Equity + Non-current liabilities',
+  an:{e:'🍛',t:'A restaurant that turns ₹50 lakh of investment into ₹10 lakh of yearly operating profit (20% ROCE) is a better machine than one turning ₹2 crore into ₹20 lakh (10%) — even though the second makes "more money".'},
+  sim:{inputs:[['Operating profit (₹L)',5,60,20,1],['Capital employed (₹L)',50,400,100,5]],
+    comp:v=>{const r=v[0]/v[1]*100;return{val:fmt.pct(r),pct:clamp(r/40*100,2,100),
+      note:r>18?'Strong — every ₹100 invested earns ₹'+r.toFixed(0)+' before interest and tax.':r>10?'Respectable, but compare with the industry and the cost of borrowing.':'Weak — capital might earn more elsewhere. Investors will ask hard questions.'}}},
+  co:[['TCS','~50%','Software needs almost no capital — no factories, no inventory. Capital-light businesses post huge ROCE.'],
+      ['Nestlé India','~40%','Decades-old brands let it earn premium margins on a modest asset base.'],
+      ['Tata Motors','~12%','Car plants devour capital. Even good years produce modest returns per rupee employed.'],
+      ['Tesla','~15%','Improving as giga-factories scale, but manufacturing gravity is hard to escape.']],
+  ins:'ROCE is the "primary ratio": it decomposes into Operating margin × Net asset turnover. A weak ROCE is diagnosed by asking which of the two broke.'},
+
+{ id:'opm', g:'prof', name:'Operating Margin', hook:'"What survives the costs?"',
+  story:{t:'Two shops each sell ₹100 of goods. Costco keeps about ₹3.50 as operating profit. Apple keeps about ₹30. Yet both are spectacular businesses worth hundreds of billions.',
+    q:'How can a 3.5% margin business be spectacular?', o:['It cannot — Costco must be failing','Low margin can be a deliberate weapon if volume is enormous','Costco hides its profits'], a:1,
+    r:'Costco <b>chooses</b> razor-thin margins to be unbeatable on price, then makes it up on colossal volume and membership fees. Apple chooses premium margins on fewer units. Margin is a <b>strategy</b>, not a score — which is why margins must always be compared within an industry, never across.'},
+  f:'Operating margin = PBIT ÷ Revenue × 100', fl:'Also compute gross margin = Gross profit ÷ Revenue',
+  an:{e:'🧃',t:'Out of every ₹100 note a customer hands over, the margin is what is left after the cost of the juice, the shop rent and staff wages — before the bank and the taxman take their cut.'},
+  sim:{inputs:[['Revenue (₹L)',100,1000,400,10],['Operating costs (₹L)',80,950,340,10]],
+    comp:v=>{const r=(v[0]-v[1])/v[0]*100;return{val:fmt.pct(r),pct:clamp((r+10)/45*100,2,100),
+      note:r<0?'Loss-making — costs exceed revenue. Survival mode.':r>20?'Premium-brand territory: pricing power or unique products.':r>8?'Healthy for most industries — watch the trend, not just the level.':'Thin margin — viable only with very high volume (think supermarkets).'}}},
+  co:[['Nvidia','~60%','Near-monopoly on AI chips = extraordinary pricing power.'],['Apple','~30%','Brand lets it charge far above manufacturing cost.'],['Walmart / DMart-style retail','~4%','Deliberate: win on price, profit on volume.'],['Asian Paints','~18%','Brand strength + distribution muscle in a commodity-adjacent category.']],
+  ins:'Rising revenue with falling margin is an exam classic: discounting to chase sales, or input costs rising faster than prices.'},
+
+{ id:'nat', g:'prof', name:'Net Asset Turnover', hook:'"How hard do the assets work?"',
+  story:{t:'Two shops occupy identical ₹1 crore premises. Shop A rings up ₹4 crore of sales a year; Shop B manages ₹80 lakh. Same assets, wildly different activity.',
+    q:'What does Shop A have that Shop B lacks?', o:['Higher prices','Assets that generate more sales per rupee — they "sweat"','More profit per sale'], a:1,
+    r:'Asset turnover ignores profit entirely — it asks how many rupees of <b>sales</b> each rupee of net assets generates. Shop A turns its capital 4×; Shop B only 0.8×. Supermarkets live on high turnover; luxury brands on high margin. ROCE = the two multiplied together.'},
+  f:'Net asset turnover = Revenue ÷ Capital employed', fl:'Expressed as "times" — sales generated per ₹1 of capital',
+  an:{e:'🏪',t:'A busy dosa stall serving 500 customers a day from a tiny cart has ferocious asset turnover. A grand, empty banquet hall does not.'},
+  sim:{inputs:[['Revenue (₹L)',50,800,300,10],['Capital employed (₹L)',50,500,150,10]],
+    comp:v=>{const r=v[0]/v[1];return{val:fmt.x(r),pct:clamp(r/4*100,2,100),
+      note:r>2.5?'Assets working hard — typical of retail and distribution.':r>1.2?'Moderate — normal for manufacturers.':'Capital-heavy or under-used assets. Is capacity idle?'}}},
+  co:[['Walmart','~2.4×','Stock flies off shelves; stores are sales machines.'],['Reliance (Retail arm)','high','Dense store network turning inventory rapidly.'],['Tata Steel-type heavy industry','~0.8×','Blast furnaces are expensive and slow to pay back.'],['Titan','~2×+','Jewellery is pricey stock, but it moves — strong brand pull.']],
+  ins:'Margin × turnover = ROCE. A falling turnover with stable margin often means recent expansion not yet generating sales — a key exam explanation.'},
+
+{ id:'curr', g:'liq', name:'Current Ratio', hook:'"The water tank."',
+  story:{t:'A village stores 4,000 litres of water but needs 2,000 litres before the next rain. The next village stores 1,500 litres against the same need.',
+    q:'Which village sleeps better tonight?', o:['The first — buffer of 2×','The second — less waste','Both equal'], a:0,
+    r:'The first village holds <b>2× its short-term need</b> — that buffer is exactly what the current ratio measures: current assets ÷ current liabilities. Below 1, you owe more in the next year than you own in liquid form. But hoarding 10× the water you need is also a failure — resources sitting idle.'},
+  f:'Current ratio = Current assets ÷ Current liabilities', fl:'A buffer, not a score — context decides what is "good"',
+  an:{e:'💧',t:'Your tank (cash, receivables, inventory) versus the water bills due this year (payables, overdraft, taxes). Enough to never run dry — but not so much that the tank rusts unused.'},
+  sim:{inputs:[['Current assets (₹L)',20,300,120,5],['Current liabilities (₹L)',20,300,80,5]],
+    comp:v=>{const r=v[0]/v[1];return{val:fmt.x(r),pct:clamp(r/3*100,2,100),
+      note:r<1?'⚠ Owes more this year than it holds — possible liquidity crisis, unless it is a supermarket with daily cash sales.':r>3?'Comfortable… maybe too comfortable. Cash idling and stock piling can drag ROCE down.':'Healthy buffer for most industries.'}}},
+  co:[['Infosys','~2.0×','Services firm sitting on cash, little inventory — serene liquidity.'],['Walmart','~0.8×','Below 1, yet safe: customers pay cash instantly while suppliers wait 60+ days.'],['Tesla (2018)','~0.8×','Same number as Walmart — but burning cash. Context changes everything.'],['Asian Paints','~2.2×','Strong cash generation keeps the tank full.']],
+  ins:'A ratio below 1 is dangerous for a manufacturer and perfectly normal for a supermarket. The exam rewards the "why", never the number alone.'},
+
+{ id:'quick', g:'liq', name:'Quick Ratio', hook:'"Cash you can grab tonight."',
+  story:{t:'A jeweller faces a ₹50 lakh bill due Friday. The shop is "rich": ₹70 lakh of gold ornaments in the display case — but only ₹8 lakh in the bank, and customers owe ₹10 lakh.',
+    q:'Can the jeweller comfortably pay Friday\'s bill?', o:['Yes — assets exceed the bill','Not really — ornaments can\'t be turned into cash by Friday without a fire-sale','Yes, banks lend against gold'], a:1,
+    r:'Inventory is the slowest current asset — it must find a buyer first. The quick (acid-test) ratio strips it out and asks: with cash and receivables alone, can the bills be met? Here: ₹18L vs ₹50L = 0.36. The jeweller is asset-rich, cash-poor.'},
+  f:'Quick ratio = (Current assets − Inventory) ÷ Current liabilities', fl:'The "acid test"',
+  an:{e:'👛',t:'Your monthly expenses versus the cash actually in your wallet and account — not the value of your bike, which you can\'t sell by tonight.'},
+  sim:{inputs:[['Current assets (₹L)',20,300,120,5],['…of which inventory (₹L)',0,200,60,5],['Current liabilities (₹L)',20,300,80,5]],
+    comp:v=>{const r=(v[0]-Math.min(v[1],v[0]))/v[2];return{val:fmt.x(r),pct:clamp(r/2*100,2,100),
+      note:r<0.6?'Heavy reliance on selling stock to pay bills — risky if sales slow.':r<1?'Tightish but common in inventory-led businesses.':'Can pay short-term debts without selling a single item of stock.'}}},
+  co:[['TCS','~2.3×','Barely any inventory exists — quick ≈ current ratio.'],['Titan','~0.3×','Gold-heavy balance sheet: low quick ratio is structural, not sick.'],['Costco','~0.5×','Stock-heavy but turns it in ~30 days — speed substitutes for buffer.'],['HDFC Bank','n/a','Banks use entirely different liquidity rules (LCR) — a trap to mention them here!']],
+  ins:'The gap between current and quick ratio IS the inventory story. A widening gap over time = stock building up = possible obsolescence or overtrading.'},
+
+{ id:'invd', g:'eff', name:'Inventory Days', hook:'"Food in the fridge."',
+  story:{t:'Check your fridge. The milk leaves in 3 days. That jar of pickle has watched three governments change. Now imagine the fridge is a warehouse and everything in it was bought with borrowed money.',
+    q:'Why does slow-moving stock actually hurt?', o:['It looks untidy','Cash is frozen inside it, and it may rot or go out of fashion','It doesn\'t — stock is an asset'], a:1,
+    r:'Every day an item sits unsold, the cash paid for it is <b>frozen</b> — unable to pay wages or suppliers — while storage costs tick and fashion/expiry risk grows. Inventory days measures the average sit-time. Fresh-food chains live near 25 days; jewellers can exceed 200 — the benchmark is the industry.'},
+  f:'Inventory days = Inventory ÷ Cost of sales × 365', fl:'Average days stock waits before being sold',
+  an:{e:'🧊',t:'Milk = fast fashion retailer. Pickle jar = luxury watch dealer. Both fine — until the milk shop starts holding stock like the pickle shop.'},
+  sim:{inputs:[['Inventory (₹L)',5,200,40,5],['Cost of sales (₹L)',50,600,240,10]],
+    comp:v=>{const r=v[0]/v[1]*365;return{val:fmt.days(r),pct:clamp(100-r/200*100,2,100),
+      note:r<35?'Stock flies out — efficient, but check you\'re not losing sales to empty shelves.':r<90?'Typical for most retail/manufacturing.':'Stock is hibernating. Obsolescence risk, storage cost, frozen cash.'}}},
+  co:[['Zara-style fast fashion','~25 days','Designed-to-sell-out model; freshness is the product.'],['Costco','~30 days','Sells stock before even paying suppliers for it.'],['Titan / Tanishq','~200 days','Gold doesn\'t expire; deep ranges are the business model.'],['Tata Motors','~35 days','Cars on lots depreciate fast — speed matters.']],
+  ins:'Rising inventory days + rising revenue can signal overtrading; rising days + flat revenue signals demand collapse. Same symptom, two diseases.'},
+
+{ id:'recd', g:'eff', name:'Receivable Days', hook:'"Friends who owe you money."',
+  story:{t:'You lent three friends ₹500 each. Aisha repaid in a week. Rohan took two months. Vikram has changed his phone number. Your business "sales" to them are complete — your cash is not.',
+    q:'What is the real cost of Rohan and Vikram?', o:['Nothing — they\'ll pay eventually','You may need to borrow to cover your own bills while waiting, and some never pay','Only the friendship'], a:1,
+    r:'A credit sale is a loan to your customer. Receivable days measures how long, on average, customers take to pay. While they delay, <b>you</b> finance their purchase — often with your own overdraft. And the longer a debt ages, the more likely it quietly becomes Vikram.'},
+  f:'Receivable days = Trade receivables ÷ Credit sales × 365', fl:'Average collection period',
+  an:{e:'🤝',t:'Generous credit wins customers the way lending money wins friends — pleasant until the rent is due and everyone owes you.'},
+  sim:{inputs:[['Receivables (₹L)',5,200,50,5],['Credit sales (₹L)',100,800,365,5]],
+    comp:v=>{const r=v[0]/v[1]*365;return{val:fmt.days(r),pct:clamp(100-r/120*100,2,100),
+      note:r<30?'Tight collection — great for cash, but is strict credit policy costing sales?':r<60?'Standard trade terms territory.':'Customers are using you as a free bank. Chase, or check for hidden bad debts.'}}},
+  co:[['Apple (retail sales)','~days','Customers pay at the till — receivables are mostly from carriers/resellers.'],['Infosys','~70 days','Corporate clients pay on 60–90 day invoices; normal for IT services.'],['Construction firms','100+ days','Stage payments and retentions stretch collection painfully.'],['ITC (cigarettes/FMCG)','~15 days','Distributors pay fast for fast-moving goods.']],
+  ins:'Receivable days jumping while revenue jumps = the growth may be "bought" by offering reckless credit — a favourite exam scenario.'},
+
+{ id:'payd', g:'eff', name:'Payable Days', hook:'"The credit card game."',
+  story:{t:'Your credit card bill arrives. Pay today, or on the last due date 45 days away — interest-free either way. Meanwhile your salary sits in your account earning interest.',
+    q:'When should a rational person pay?', o:['Immediately — debts are stressful','On the due date — use the free financing','Never'], a:1,
+    r:'Within agreed terms, delaying payment is <b>free financing from suppliers</b>. Payable days measures how long a firm takes to pay. Giants like supermarkets stretch this masterfully. But push past agreed terms and suppliers retaliate: worse prices, lost discounts, halted deliveries — and rising payable days becomes a distress signal.'},
+  f:'Payable days = Trade payables ÷ Credit purchases × 365', fl:'Cost of sales often used as proxy for purchases',
+  an:{e:'💳',t:'Using the full interest-free period: smart. Missing the due date because you genuinely don\'t have the money: the beginning of trouble. Same ratio, opposite meanings.'},
+  sim:{inputs:[['Payables (₹L)',5,200,45,5],['Credit purchases (₹L)',50,600,270,10]],
+    comp:v=>{const r=v[0]/v[1]*365;return{val:fmt.days(r),pct:clamp(r/120*100,2,100),
+      note:r<30?'Paying fast — possibly capturing early-payment discounts, or wasting free credit.':r<75?'Healthy use of supplier financing.':'Either world-class negotiating power (Walmart) or inability to pay (distress). The cash position tells you which.'}}},
+  co:[['Walmart / Costco','~60–90 days','Sell your goods in 30 days, pay you in 70 — suppliers fund the shelves.'],['Reliance Retail','long','Scale = negotiating muscle over thousands of vendors.'],['Small manufacturers','~30 days','Little power; must pay promptly to keep supply.'],['Distressed firms','rising fast','Stretching payables involuntarily — the classic overtrading tell.']],
+  ins:'Working capital cycle = Inventory days + Receivable days − Payable days. Costco\'s is roughly negative: customers fund the business. That is the model, not an accident.'},
+
+{ id:'gear', g:'gear', name:'Gearing', hook:'"Buying a house with a loan."',
+  story:{t:'Two friends each buy a ₹50 lakh flat. Meera pays cash. Arjun puts ₹10 lakh down and borrows ₹40 lakh. Prices rise 20% — Meera gains 20% on her money; Arjun gains 100%. Prices fall 20% — Meera loses 20%; Arjun\'s entire deposit is wiped out.',
+    q:'What did the loan actually do to Arjun?', o:['Made him richer','Amplified both his gains and his losses','Nothing — same flat'], a:1,
+    r:'Debt is an <b>amplifier</b>. It magnifies returns on the way up and devastation on the way down — and unlike dividends, interest must be paid in good years and bad. Gearing measures how much of a company\'s capital is this amplifier. High gearing isn\'t "bad" — it\'s <i>fragile</i>.'},
+  f:'Gearing = Debt ÷ Equity × 100  (or Debt ÷ (Debt + Equity))', fl:'State which version you use — examiners accept both',
+  an:{e:'🏠',t:'A home loan turns a small deposit into a big asset. It also turns a small price fall into a wiped-out deposit. Companies play the identical game with bonds and loans.'},
+  sim:{inputs:[['Debt (₹Cr)',0,300,80,5],['Equity (₹Cr)',20,300,120,5]],
+    comp:v=>{const r=v[0]/v[1]*100;return{val:fmt.pct(r),pct:clamp(r/200*100,2,100),
+      note:r<30?'Conservative — resilient in downturns, but possibly leaving cheap growth funding unused.':r<90?'Moderate — typical for capital-hungry industries.':'Highly geared. Brilliant if profits hold; brutal if they don\'t. Check interest cover immediately.'}}},
+  co:[['TCS / Infosys','~0%','Essentially debt-free — software needs brains, not borrowed billions.'],['Netflix (content era)','high','Borrowed billions to fund shows before subscriptions caught up — a deliberate gamble that worked.'],['Tata Motors (JLR years)','high','Acquisition debt amplified both the glory years and the crisis years.'],['Power/telecom utilities','very high','Stable cash flows make heavy debt survivable — context again.']],
+  ins:'High gearing + volatile revenue = danger. High gearing + utility-stable revenue = normal. Gearing is only meaningful next to earnings stability.'},
+
+{ id:'icov', g:'gear', name:'Interest Cover', hook:'"Salary vs EMI."',
+  story:{t:'Dev earns ₹1,00,000 a month and pays a ₹20,000 EMI — covered 5 times. His cousin earns the same but pays ₹70,000 in EMIs — covered 1.4 times. A 30% salary cut hits both.',
+    q:'After the pay cut, who is in genuine trouble?', o:['Both equally','The cousin — earnings barely clear the EMIs even before the cut','Neither, EMIs are fixed'], a:1,
+    r:'After the cut Dev still covers his EMI 3.5×. The cousin now earns ₹70,000 against ₹70,000 of EMIs — cover of exactly 1. One bad month and he defaults. Interest cover asks the same of companies: how many times does operating profit cover the interest bill? Below ~2, dividends and survival are both in question.'},
+  f:'Interest cover = Operating profit (PBIT) ÷ Finance costs', fl:'The early-warning sibling of gearing',
+  an:{e:'📉',t:'Gearing is the size of your loans. Interest cover is whether this month\'s salary actually pays this month\'s EMIs. Lenders watch the second far more nervously.'},
+  sim:{inputs:[['Operating profit (₹Cr)',5,200,60,5],['Interest expense (₹Cr)',1,100,12,1]],
+    comp:v=>{const r=v[0]/v[1];return{val:fmt.x1(r),pct:clamp(r/12*100,2,100),
+      note:r>6?'Comfortable — interest is a rounding error against profits.':r>2.5?'Adequate, but a recession would squeeze.':'⚠ Danger zone. Profit barely services debt; dividends are at risk and lenders are circling.'}}},
+  co:[['Apple','~25×+','Borrows for tax efficiency, not need; interest is trivial.'],['Asian Paints','very high','Near-zero debt = near-infinite cover.'],['Vodafone Idea','below 1','Operating profit hasn\'t covered interest — survival depends on refinancing.'],['Adani-style infra builds','watched closely','Markets reprice the equity the moment cover trends down.']],
+  ins:'Falling interest cover is the bridge in cause-effect chains: more debt → more interest → lower cover → dividend risk → share-price pressure.'},
+
+{ id:'eps', g:'inv', name:'EPS', hook:'"Your slice of the cake."',
+  story:{t:'A bakery\'s profit cake weighs 100kg, shared between 100 shareholders — 1kg each. To fund expansion the bakery issues 100 new shares. Next year the cake grows to 150kg.',
+    q:'Did existing shareholders\' slices grow?', o:['Yes — profit rose 50%','No — 150kg over 200 shares is 0.75kg per slice','Slices are unaffected by share count'], a:1,
+    r:'Total profit rose, but each <b>slice shrank</b> from 1kg to 0.75kg — this is <b>dilution</b>. EPS = profit after tax ÷ number of shares, and it\'s why shareholders care about "per share" growth, not headline profit growth. It\'s also why buybacks (destroying shares) mechanically raise EPS.'},
+  f:'EPS = Profit after tax (less pref. dividends) ÷ Weighted average ordinary shares', fl:'The only ratio whose calculation is governed by an accounting standard (IAS 33)',
+  an:{e:'🍰',t:'It is not the size of the cake. It is the size of your slice — and how many new guests management keeps inviting to the party.'},
+  sim:{inputs:[['Profit after tax (₹Cr)',10,500,150,10],['Shares in issue (Cr)',10,200,50,5]],
+    comp:v=>{const r=v[0]/v[1];return{val:fmt.money(r),pct:clamp(r/10*100,2,100),
+      note:'EPS of ₹'+r.toFixed(2)+'. Watch what moves it: profit growth (good), buybacks (engineered), or new shares (dilution).'}}},
+  co:[['Apple','rising for a decade','Massive buybacks shrink the share count every year — EPS grows faster than profit.'],['TCS','steady riser','Profit growth + regular buybacks: a double engine.'],['Loss-making startups','negative','Pre-profit tech firms ask investors to value the story, not the slice.'],['Rights-issue years','EPS dips','New shares dilute first; the funded projects must out-earn the dilution.']],
+  ins:'EPS rising while profit is flat = financial engineering via buybacks. Examiners love asking you to spot it.'},
+
+{ id:'pe', g:'inv', name:'P/E Ratio', hook:'"Paying extra for the young superstar."',
+  story:{t:'Two strikers score 20 goals a season. One is 35 years old, one is 19. A club pays €5m for the veteran and €60m for the teenager.',
+    q:'What is the club really buying for €60m?', o:['This season\'s 20 goals','The next decade of expected goals','Shirt sales only'], a:1,
+    r:'Identical current output; wildly different <b>futures</b>. The P/E ratio is the same bet: price ÷ current earnings tells you how many years of today\'s profit you\'re paying upfront. A P/E of 60 says "I expect these earnings to multiply." A P/E of 8 says "I expect little — or I fear decline." Expensive isn\'t the same as overpriced; cheap isn\'t the same as a bargain.'},
+  f:'P/E = Market price per share ÷ EPS', fl:'"Years of current earnings paid upfront"',
+  an:{e:'⚽',t:'The teenager\'s transfer fee only makes sense if he becomes Mbappé. Nvidia\'s P/E only makes sense if AI demand keeps exploding. High P/E = a story that must come true.'},
+  sim:{inputs:[['Share price (₹)',50,3000,900,10],['EPS (₹)',5,120,30,1]],
+    comp:v=>{const r=v[0]/v[1];return{val:r.toFixed(1)+'×',pct:clamp(r/80*100,2,100),
+      note:r>40?'Priced for a spectacular future — any disappointment gets punished hard.':r>18?'Growth expectations baked in; typical of quality franchises.':'Low expectations: either a bargain, a slow industry, or a business in trouble. Investigate which.'}}},
+  co:[['Nvidia','~60×+','The market is pre-paying for years of AI growth.'],['Titan','~80×+','Indian investors pay enormous premiums for trusted compounders.'],['Coca-Cola','~24×','Steady, predictable, beloved — a "sleep well" multiple.'],['Legacy oil / PSU banks','~6–10×','Profitable today, but markets doubt the next decade.']],
+  ins:'Never call a high P/E "overvalued" in an exam. Say: the market expects strong earnings growth — then assess whether that expectation is justified.'},
+
+{ id:'dy', g:'inv', name:'Dividend Yield', hook:'"Rent from a flat."',
+  story:{t:'You buy a flat for ₹50 lakh that pays ₹1.5 lakh annual rent — a 3% yield. Your friend\'s identical flat in a booming area pays the same rent but now its price has doubled to ₹1 crore.',
+    q:'What happened to your friend\'s yield?', o:['Doubled','Halved to 1.5% — same rent on double the price','Unchanged'], a:1,
+    r:'Yield = income ÷ <b>current price</b>. When the price soars and income doesn\'t, yield falls — which is why a <i>low</i> dividend yield often signals a hot, loved stock rather than a stingy one. And a suspiciously <i>high</i> yield often means the price has crashed because the market expects the dividend to be cut.'},
+  f:'Dividend yield = Dividend per share ÷ Market price × 100', fl:'The "cash rent" on owning the share',
+  an:{e:'🏢',t:'Yield is rent ÷ today\'s property price. A 12% rental yield in a dying neighbourhood is not a bargain — it\'s a warning.'},
+  sim:{inputs:[['Dividend per share (₹)',0,60,12,1],['Share price (₹)',50,2000,400,10]],
+    comp:v=>{const r=v[0]/v[1]*100;return{val:fmt.pct(r),pct:clamp(r/10*100,2,100),
+      note:r>6?'Juicy — but ask why the price is so low. The market may be pricing a dividend cut.':r>2?'Typical income-stock territory.':'Low yield: growth company reinvesting, or a share price that has run far ahead.'}}},
+  co:[['ITC','~3–4%','The classic Indian income stock — cash-gushing cigarettes funding dividends.'],['Coca-Cola','~3%','60+ consecutive years of dividend increases.'],['Amazon','0%','Has never paid a dividend — every rupee reinvested into growth. Shareholders cheered for decades.'],['Vodafone-type fallen giants','spikes high','Yield "looked" 9% right before the dividend was scrapped.']],
+  ins:'Low yield can be bullish (price strength, reinvestment). High yield can be a trap. Yield must be read with dividend cover and the price chart.'},
+
+{ id:'dcov', g:'inv', name:'Dividend Cover', hook:'"Salary vs spending."',
+  story:{t:'Two cousins each send ₹20,000 home monthly. Asha earns ₹80,000. Bina earns ₹22,000 — and dips into savings in bad months to keep the ₹20,000 flowing.',
+    q:'Whose ₹20,000 would you bet on continuing next year?', o:['Both equal — same amount','Asha\'s — hers is covered 4× by earnings; Bina\'s barely 1.1×','Bina\'s — she\'s clearly more committed'], a:1,
+    r:'The amount is identical; the <b>sustainability</b> is not. Dividend cover = EPS ÷ DPS — how many times profits could pay the dividend. Below ~1.5× a dividend lives dangerously; below 1× it is being paid out of reserves or borrowings, which cannot last.'},
+  f:'Dividend cover = EPS ÷ Dividend per share', fl:'Reciprocal of the payout ratio',
+  an:{e:'💸',t:'A dividend covered 4× survives a bad year with a shrug. A dividend covered 1.1× survives a bad year by being cancelled.'},
+  sim:{inputs:[['EPS (₹)',2,100,24,1],['Dividend per share (₹)',1,80,8,1]],
+    comp:v=>{const r=v[0]/v[1];return{val:fmt.x1(r),pct:clamp(r/6*100,2,100),
+      note:r<1?'⚠ Paying out more than it earns — uncovered dividend, funded by reserves. Unsustainable.':r<1.8?'Thin cover. A profit dip forces a cut — and markets punish cuts brutally.':'Well covered: room to maintain the dividend even through a rough year.'}}},
+  co:[['TCS','~1.5–2×','Deliberately generous payout — confidence in ultra-stable cash flows.'],['Nestlé India','~1–1.2×','Pays out nearly everything; the brand machine needs little reinvestment.'],['Growth tech','n/a or huge','Tiny/no dividend = infinite cover; cash goes to expansion instead.'],['Pre-crisis dividend traps','below 1×','Carillion-style collapses showed uncovered dividends right in the notes.']],
+  ins:'High yield + low cover = the classic dividend trap. The two ratios are designed to be read as a pair.'},
+];
+
+/* ==================================================== */
+/* LEARN PATH + LESSON ENGINE                           */
+/* ==================================================== */
+let curGroup='prof';
+const groupbar=document.getElementById('groupbar');
+GROUPS.forEach(([id,l])=>{const b=document.createElement('button');b.textContent=l;b.id='gb-'+id;
+  b.onclick=()=>{curGroup=id;renderList();};groupbar.appendChild(b);});
+function renderList(){
+  document.querySelectorAll('.groupbar button').forEach(b=>b.classList.toggle('on',b.id==='gb-'+curGroup));
+  document.getElementById('ratioList').innerHTML=RATIOS.filter(r=>r.g===curGroup).map(r=>
+    `<div class="card ratio-card ${S.done.has(r.id)?'complete':''}" onclick="openLesson('${r.id}')">
+      <span class="done">✓</span>
+      <div class="tag">${GROUPS.find(g=>g[0]===r.g)[1]}</div>
+      <h3>${r.name}</h3><p class="hook">${r.hook}</p>
+    </div>`).join('');
+}
+renderList();
+
+let L=null, Lstep=0, Lpredicted=false;
+function openLesson(id){
+  L=RATIOS.find(r=>r.id===id); Lstep=0; Lpredicted=false;
+  go('lesson'); renderLesson();
+}
+function renderLesson(){
+  const root=document.getElementById('lessonRoot');
+  const dots=`<div class="stepdots">${[0,1,2,3,4].map(i=>`<span class="${i<=Lstep?'on':''}"></span>`).join('')}</div>`;
+  const steps=[
+    /* 0 — story + predict */
+    `<div class="eyebrow">${GROUPS.find(g=>g[0]===L.g)[1]} · Step 1 — The story</div>
+     <h2 class="h-page">${L.name}</h2>${dots}
+     <p class="storytext">${L.story.t}</p>
+     <div class="card" style="margin-top:20px">
+       <p style="font-weight:600">${L.story.q}</p>
+       <div class="choice-row" id="lsnChoices">${L.story.o.map((o,i)=>`<button class="choice" data-i="${i}">${o}</button>`).join('')}</div>
+       <div class="reveal" id="lsnReveal"><p>${L.story.r}</p></div>
+     </div>`,
+    /* 1 — formula + analogy */
+    `<div class="eyebrow">Step 2 — Now, the formula</div>
+     <h2 class="h-page">You already understand it.</h2>${dots}
+     <div class="formula-box"><span class="fl">${L.fl}</span>${L.f}</div>
+     <div class="analogy"><div class="em">${L.an.e}</div><p class="muted" style="font-size:.95rem">${L.an.t}</p></div>`,
+    /* 2 — playground */
+    `<div class="eyebrow">Step 3 — Playground</div>
+     <h2 class="h-page">Move the numbers. Feel the ratio.</h2>${dots}
+     <div class="simgrid">
+       <div class="card" id="simInputs"></div>
+       <div class="card">
+         <div class="bigval-label">${L.name}</div>
+         <div class="bigval" id="simVal">—</div>
+         <div class="gauge"><div class="fill" id="simGauge"></div></div>
+         <div class="gauge-cap"><span>weak</span><span>strong</span></div>
+         <p class="simnote" id="simNote"></p>
+       </div>
+     </div>`,
+    /* 3 — real world */
+    `<div class="eyebrow">Step 4 — The real world</div>
+     <h2 class="h-page">Same ratio, four very different businesses.</h2>${dots}
+     <div class="card"><table class="cmp-table">
+       <tr><th>Company</th><th>${L.name}</th><th>The business reason</th></tr>
+       ${L.co.map(c=>`<tr><td><b>${c[0]}</b></td><td class="num hl-g">${c[1]}</td><td class="muted">${c[2]}</td></tr>`).join('')}
+     </table>
+     <p class="tiny">Illustrative levels from recent annual reports — the pattern matters more than the decimal.</p></div>`,
+    /* 4 — insight */
+    `<div class="eyebrow">Step 5 — The examiner's insight</div>
+     <h2 class="h-page">What separates a pass from a distinction.</h2>${dots}
+     <div class="card" style="border-color:var(--gold)"><p style="font-family:var(--disp);font-size:1.15rem">💡 ${L.ins}</p></div>
+     <div class="card" style="text-align:center;margin-top:18px">
+       <p class="muted">Lesson complete. ${S.done.has(L.id)?'Already mastered.':'Claim your reward:'}</p>
+       <button class="btn btn-gold" style="margin-top:10px" onclick="finishLesson()">${S.done.has(L.id)?'Revisit path':'✓ Complete — +40 XP'}</button>
+     </div>`,
+  ];
+  root.innerHTML=steps[Lstep]+`
+    <div class="lesson-nav">
+      <button class="btn btn-ghost" ${Lstep===0?'disabled':''} onclick="lstep(-1)">← Back</button>
+      ${Lstep<4?`<button class="btn btn-pri" id="lsnNext" ${Lstep===0&&!Lpredicted?'disabled':''} onclick="lstep(1)">Continue →</button>`:''}
+    </div>`;
+  if(Lstep===0){
+    document.getElementById('lsnChoices').onclick=e=>{
+      const b=e.target.closest('.choice'); if(!b||Lpredicted)return;
+      Lpredicted=true;
+      document.querySelectorAll('#lsnChoices .choice').forEach(c=>{
+        if(+c.dataset.i===L.story.a)c.classList.add(c===b?'picked-right':'show-right');
+        else if(c===b)c.classList.add('picked-wrong');
+      });
+      if(+b.dataset.i===L.story.a)addXP(10,'Good prediction');
+      document.getElementById('lsnReveal').classList.add('on');
+      document.getElementById('lsnNext').disabled=false;
+    };
+  }
+  if(Lstep===2) buildSim();
+}
+function lstep(d){Lstep=clamp(Lstep+d,0,4);renderLesson();}
+function finishLesson(){
+  if(!S.done.has(L.id)){S.done.add(L.id);addXP(40,L.name+' mastered');
+    if(S.done.size===RATIOS.length)ach('all','Ratio Grandmaster — all 15 complete');
+    else if(S.done.size===5)ach('five','Five Down');}
+  go('learn');renderList();
+}
+function buildSim(){
+  const wrap=document.getElementById('simInputs');
+  wrap.innerHTML=L.sim.inputs.map((inp,i)=>`
+    <div class="slider-row">
+      <label>${inp[0]}<b id="sv${i}">${inp[3]}</b></label>
+      <input type="range" min="${inp[1]}" max="${inp[2]}" value="${inp[3]}" step="${inp[4]}" data-i="${i}" oninput="simUpd()">
+    </div>`).join('');
+  simUpd();
+}
+function simUpd(){
+  const vals=[...document.querySelectorAll('#simInputs input')].map((el,i)=>{
+    document.getElementById('sv'+i).textContent=el.value; return +el.value;});
+  const r=L.sim.comp(vals);
+  document.getElementById('simVal').textContent=r.val;
+  document.getElementById('simGauge').style.width=r.pct+'%';
+  document.getElementById('simNote').textContent=r.note;
+}
+
+/* ==================================================== */
+/* THE LAB — full-company chain reaction model          */
+/* ==================================================== */
+const LAB_BASE={rev:500,cogs:325,opex:100,intRate:8,debt:120,equity:200,shares:20,price:95,
+  inv:60,rec:55,cash:35,pay:50,divPS:1.6};
+let LAB={...LAB_BASE};
+const LAB_LEVERS=[
+  ['debt','Borrow / repay debt (₹Cr)',0,300,5,'Loans amplify returns — and interest bills.'],
+  ['cogs','Cost of sales (₹Cr)',250,420,5,'Cheaper sourcing lifts every profit ratio at once.'],
+  ['rev','Revenue (₹Cr)',350,750,10,'Growth is oxygen — unless working capital can\'t keep up.'],
+  ['rec','Receivables (₹Cr)',20,150,5,'Looser credit terms boost sales… on paper.'],
+  ['inv','Inventory (₹Cr)',20,160,5,'Stocking up for a big season — or just hoarding?'],
+  ['divPS','Dividend per share (₹)',0,5,0.2,'Shareholders love it. The bank balance doesn\'t.'],
+  ['shares','Shares in issue (Cr)',10,35,1,'Issue shares (dilute) or buy back (concentrate).'],
+];
+function labCalc(m){
+  const pbit=m.rev-m.cogs-m.opex;
+  const int_=m.debt*m.intRate/100;
+  const pat=(pbit-int_)*0.75;
+  const ce=m.equity+m.debt;
+  const ca=m.inv+m.rec+m.cash, cl=m.pay;
+  const eps=pat/m.shares, div=m.divPS;
+  return{
+    gpm:{l:'Gross margin',v:(m.rev-m.cogs)/m.rev*100,f:fmt.pct},
+    roce:{l:'ROCE',v:pbit/ce*100,f:fmt.pct},
+    opm:{l:'Op. margin',v:pbit/m.rev*100,f:fmt.pct},
+    nat:{l:'Asset turnover',v:m.rev/ce,f:fmt.x},
+    curr:{l:'Current ratio',v:ca/cl,f:fmt.x},
+    quick:{l:'Quick ratio',v:(ca-m.inv)/cl,f:fmt.x},
+    invd:{l:'Inventory days',v:m.inv/m.cogs*365,f:fmt.days},
+    recd:{l:'Receivable days',v:m.rec/m.rev*365,f:fmt.days},
+    payd:{l:'Payable days',v:m.pay/m.cogs*365,f:fmt.days},
+    gear:{l:'Gearing (D/E)',v:m.debt/m.equity*100,f:fmt.pct},
+    icov:{l:'Interest cover',v:int_>0?pbit/int_:99,f:fmt.x1},
+    eps:{l:'EPS',v:eps,f:fmt.money},
+    pe:{l:'P/E',v:m.price/eps,f:v=>v.toFixed(1)+'×'},
+    dy:{l:'Div. yield',v:div/m.price*100,f:fmt.pct},
+    dcov:{l:'Div. cover',v:div>0?eps/div:99,f:fmt.x1},
+  };
+}
+const LAB_BASE_R=labCalc(LAB_BASE);
+const HIGHER_BAD=new Set(['invd','recd','gear','pe']);  /* pe neutral-ish; treat rise as 'watch' */
+function labControlsRender(){
+  document.getElementById('labControls').innerHTML=
+    `<div class="eyebrow" style="margin-bottom:10px">Decision levers</div>`+
+    LAB_LEVERS.map(([k,l,mn,mx,st,tip])=>`
+    <div class="slider-row">
+      <label>${l}<b id="lv-${k}">${LAB[k]}</b></label>
+      <input type="range" min="${mn}" max="${mx}" step="${st}" value="${LAB[k]}" data-k="${k}" oninput="labUpd(this)">
+      <div class="tiny" style="margin-top:2px">${tip}</div>
+    </div>`).join('');
+}
+function labUpd(el){
+  if(el){LAB[el.dataset.k]=+el.value;document.getElementById('lv-'+el.dataset.k).textContent=el.value;}
+  const now=labCalc(LAB), board=document.getElementById('labBoard');
+  board.innerHTML=Object.entries(now).map(([k,r])=>{
+    const base=LAB_BASE_R[k].v, d=r.v-base, rel=Math.abs(d)/(Math.abs(base)||1);
+    let cls='', sign='';
+    if(rel>0.015){ const good=HIGHER_BAD.has(k)?d<0:d>0; cls=good?'up':'down'; sign=(d>0?'▲ ':'▼ ')+LAB_BASE_R[k].f(Math.abs(d)).replace('₹','₹'); }
+    return `<div class="rcell ${cls}"><div class="rl">${r.l}</div><div class="rv">${r.f(r.v)}</div><div class="rd">${sign||'— baseline'}</div></div>`;
+  }).join('');
+  labRipples(now);
+}
+function labRipples(now){
+  const R=[], b=LAB_BASE_R, m=LAB;
+  const moved=(k,t=0.015)=>Math.abs(now[k].v-b[k].v)/(Math.abs(b[k].v)||1)>t;
+  if(m.debt>LAB_BASE.debt) R.push(['More debt taken on','gearing rises → interest bill grows → interest cover falls → dividend safety weakens → equity investors demand more return']);
+  if(m.debt<LAB_BASE.debt) R.push(['Debt repaid','gearing falls → interest saved flows to profit → interest cover and EPS strengthen → a safer, possibly duller, investment']);
+  if(m.cogs<LAB_BASE.cogs) R.push(['Costs cut','operating margin widens → ROCE climbs → EPS rises → with an unchanged share price, the P/E quietly falls (the share got "cheaper")']);
+  if(m.cogs>LAB_BASE.cogs) R.push(['Input costs rising','margin compressed → ROCE and EPS sag → if the dividend is held, cover thins → cut risk appears']);
+  if(m.rev>LAB_BASE.rev&&moved('recd',0.005)===false) R.push(['Revenue growing','asset turnover improves → ROCE rises even at the same margin → growth without new capital is the sweetest kind']);
+  if(m.rev>LAB_BASE.rev+100&&m.rec>LAB_BASE.rec) R.push(['⚠ Growth + ballooning receivables','classic overtrading: sales rise but cash lags → liquidity tightens → may force emergency borrowing → gearing and interest cost spiral']);
+  if(m.rec>LAB_BASE.rec&&m.rev<=LAB_BASE.rev+50) R.push(['Looser credit terms','receivable days stretch → cash frozen in customers\' pockets → quick ratio slips → bad-debt risk compounds quietly']);
+  if(m.inv>LAB_BASE.inv) R.push(['Inventory piling up','inventory days lengthen → cash converts to stock → current ratio "improves" while quick ratio worsens — a textbook trap']);
+  if(m.divPS>LAB_BASE.divPS) R.push(['Dividend raised','yield rises and income investors cheer → but cover falls → one bad year now forces a cut → cuts are punished harder than low dividends']);
+  if(m.shares>LAB_BASE.shares) R.push(['New shares issued','profit divides across more slices → EPS dilutes → P/E mechanically rises at the same price → existing holders own less of the cake']);
+  if(m.shares<LAB_BASE.shares) R.push(['Shares bought back','fewer slices → EPS jumps with zero operating improvement → "growth" by arithmetic. Examiners expect you to spot this.']);
+  document.getElementById('labRipples').innerHTML=R.length?
+    R.map(r=>`<div class="ripple"><span class="arrow">⤷</span><span><b>${r[0]}</b> — ${r[1]}</span></div>`).join('')
+    :'<p class="muted">Move a slider to see cause and effect…</p>';
+}
+function labReset(){LAB={...LAB_BASE};labControlsRender();labUpd();}
+labControlsRender();labUpd();
+
+/* ---------- animated cause-effect chains ---------- */
+const CHAINS={
+  'Take on more debt':['Company borrows heavily','Gearing rises','Interest expense rises','Interest cover falls','Dividend safety weakens','Shareholders grow nervous','Share price drifts down','P/E and yield re-rate'],
+  'Chase sales with easy credit':['Sales team offers 90-day terms','Revenue jumps — champagne!','Receivable days balloon','Cash stops arriving','Overdraft grows to pay suppliers','Interest cost climbs','Profit quality questioned','The "growth" was a loan to customers'],
+  'Cut prices to win volume':['Prices cut 10%','Volume rises, revenue holds','Gross margin compresses','Operating margin falls','ROCE depends on turnover rising enough','If it doesn\'t — profit falls','EPS and dividend cover thin','Cheap today, expensive later'],
+  'Buy back shares':['Spare cash used to buy back shares','Share count falls','EPS rises automatically','P/E falls if price static','Market often re-rates price up','ROE flatters as equity shrinks','No factory was built','Engineering, not growth'],
+};
+const cp=document.getElementById('chainPickers');
+Object.keys(CHAINS).forEach((k,i)=>{const b=document.createElement('button');b.className='btn btn-ghost';b.textContent=k;
+  b.onclick=()=>playChain(k);cp.appendChild(b);});
+function playChain(k){
+  const v=document.getElementById('chainView');
+  v.innerHTML=CHAINS[k].map((n,i)=>
+    `<div class="chain-node" id="cn${i}">${n}</div>${i<CHAINS[k].length-1?`<div class="chain-arrow" id="ca${i}">↓</div>`:''}`).join('');
+  CHAINS[k].forEach((_,i)=>setTimeout(()=>{
+    document.getElementById('cn'+i).classList.add('lit');
+    const a=document.getElementById('ca'+i); if(a)a.classList.add('lit');
+  },350*i+200));
+  addXPOnce('chain','Chain reaction watched',15);
+}
+const onceFlags=new Set();
+function addXPOnce(flag,why,n){if(onceFlags.has(flag))return;onceFlags.add(flag);addXP(n,why);}
+
+/* ==================================================== */
+/* CEO MODE                                             */
+/* ==================================================== */
+const CEO={started:false};
+const CEO_DECISIONS=[
+ {t:'Open 25 new stores',d:'₹80Cr capex funded by new borrowing. Revenue should follow… eventually.',
+  fx:s=>{s.debt+=80;s.rev*=1.05;s.pendGrowth+=0.14;s.invDays+=8;news(s,'Horizon announces aggressive store rollout','Expansion headlines excite growth investors.','good');}},
+ {t:'Take a large bank loan to refinance',d:'₹100Cr at 9%. Cheap fuel — or a slow fuse?',
+  fx:s=>{s.debt+=100;s.cash+=100;news(s,'Horizon gears up with ₹100Cr facility','Analysts immediately recompute interest cover.','');}},
+ {t:'Issue new shares (rights issue)',d:'Raise ₹120Cr equity. Safer than debt — but every slice shrinks.',
+  fx:s=>{s.shares*=1.2;s.equity+=120;s.cash+=120;news(s,'Rights issue dilutes EPS by ~17%','Income funds grumble; the balance sheet exhales.','');}},
+ {t:'Raise the dividend 40%',d:'Reward shareholders. Hope profits keep up.',
+  fx:s=>{s.divPS*=1.4;news(s,'Dividend hiked 40% — yield hunters pile in','Cover thins. One bad year and this becomes a cut.','good');}},
+ {t:'Launch a premium product line',d:'₹40Cr of marketing and R&D now; fatter margins later.',
+  fx:s=>{s.cash-=40;s.equity-=40;s.pendMargin+=0.03;news(s,'Horizon goes premium','Margins should widen from next year if the brand lands.','good');}},
+ {t:'Cut prices 8% to crush a rival',d:'Volume war. Revenue may hold; margin will not.',
+  fx:s=>{s.margin-=0.035;s.rev*=1.06;news(s,'Price war erupts in food retail','Customers cheer. The income statement does not.','bad');}},
+ {t:'Offer 90-day credit to wholesalers',d:'Sales will leap. So will receivables.',
+  fx:s=>{s.rev*=1.12;s.recDays+=35;news(s,'Revenue surges on relaxed credit terms','Veteran analysts circle "receivable days" in red ink.','');}},
+ {t:'Stockpile inventory before festival season',d:'Buy big, sell big — if the season delivers.',
+  fx:s=>{s.invDays+=30;s.cash-=45;s.pendGrowth+=0.05;news(s,'Warehouses filled ahead of Diwali quarter','Bold if demand comes; a write-down if it doesn\'t.','');}},
+ {t:'Acquire competitor "FreshMart"',d:'₹150Cr, debt-funded. Instant scale, instant gearing.',
+  fx:s=>{s.debt+=150;s.rev*=1.22;s.margin-=0.01;s.invDays+=6;news(s,'Horizon swallows FreshMart in ₹150Cr deal','Integration risk meets a leveraged balance sheet.','');}},
+ {t:'Repay ₹60Cr of debt',d:'Boring. Beautiful, boring resilience.',
+  fx:s=>{s.debt=Math.max(0,s.debt-60);s.cash-=60;news(s,'Horizon deleverages','Credit desks nod approvingly. Growth desks yawn.','good');}},
+ {t:'Buy back 8% of shares',d:'₹70Cr returned. EPS rises by arithmetic alone.',
+  fx:s=>{s.shares*=0.92;s.cash-=70;s.equity-=70;news(s,'₹70Cr buyback announced','EPS will rise — examiners would ask you why that isn\'t "growth".','good');}},
+ {t:'Cut operating costs 6%',d:'Efficiency drive: logistics, shrinkage, energy.',
+  fx:s=>{s.margin+=0.02;news(s,'Cost programme delivers','Margins widen with no strategic risk — the quiet hero move.','good');}},
+];
+function news(s,h,sub,mood){s.feed.unshift({h,sub,mood});}
+function ceoStart(){
+  CEO.started=true;
+  CEO.s={yr:1,rev:600,margin:0.085,debt:120,equity:260,shares:25,cash:60,divPS:1.2,
+    invDays:55,recDays:35,price:80,priceHist:[80],pendGrowth:0,pendMargin:0,feed:[],alive:true,rating:'BBB+'};
+  news(CEO.s,'New CEO takes charge at Horizon Foods plc','The board expects growth. The bank expects its interest. Good luck.','');
+  ceoRender(true);
+}
+function ceoRatios(s){
+  const pbit=s.rev*s.margin, int_=s.debt*0.09, pbt=pbit-int_, pat=pbt>0?pbt*0.75:pbt;
+  const ce=s.equity+s.debt, eps=pat/s.shares;
+  return{pbit,int:int_,pat,ce,eps,
+    roce:pbit/ce*100, gear:s.debt/Math.max(s.equity,1)*100, icov:int_>0?pbit/int_:99,
+    dcov:s.divPS>0?eps/s.divPS:99, curr:(s.cash+s.rev*s.recDays/365+s.rev*0.7*s.invDays/365)/(s.rev*0.7*45/365+20)};
+}
+function ceoYearEnd(s){
+  /* apply pending effects + simulate */
+  s.rev*=(1+0.03+s.pendGrowth+(Math.random()*0.04-0.02)); s.pendGrowth=0;
+  s.margin+=s.pendMargin; s.pendMargin=0;
+  const r=ceoRatios(s);
+  const divTotal=s.divPS*s.shares;
+  s.cash+=r.pat-divTotal-(s.rev*( (s.recDays-35)+(s.invDays-55) )/365)*0.15;
+  s.equity+=r.pat-divTotal;
+  /* events */
+  if(r.icov<1.6){news(s,'Credit rating cut — interest cover below 1.6×','Lenders reprice risk; refinancing gets expensive.','bad');s.rating='BB';s.price*=0.82;}
+  if(s.cash<0){news(s,'⚠ LIQUIDITY CRUNCH: Horizon maxes its overdraft','Suppliers demand cash on delivery. Emergency loan at punitive rates.','bad');s.debt+=Math.abs(s.cash)+30;s.cash=15;s.price*=0.78;}
+  if(s.recDays>80){news(s,'Auditors flag doubtful debts','Some of that booming revenue may never become cash.','bad');s.equity-=15;s.price*=0.93;}
+  if(s.invDays>95){news(s,'Inventory write-down announced','Festival stock met an unfestive public.','bad');s.equity-=12;s.margin-=0.005;s.price*=0.95;}
+  if(r.gear>140)news(s,'Analysts: "Horizon is dangerously geared"','Equity is now a thin slice on a large loan.','bad');
+  if(r.roce>16&&r.gear<90){news(s,'Horizon named "best-run retailer"','High returns, sane balance sheet — institutions accumulate.','good');s.price*=1.12;}
+  if(r.dcov<1){news(s,'Dividend uncovered — cut imminent?','Paying shareholders from reserves never ends well.','bad');s.price*=0.9;}
+  /* price drift toward fundamentals */
+  const fair=r.eps*Math.max(6,18-(r.gear/20)+(r.roce-10)/2);
+  s.price=Math.max(5,s.price*0.55+fair*0.45);
+  s.priceHist.push(s.price);
+  if(s.equity<=0){s.alive=false;news(s,'💀 HORIZON FOODS ENTERS ADMINISTRATION','Equity wiped out. Gearing, then interest, then the end. A complete FR case study — congratulations?','bad');}
+  s.yr++;
+}
+function spark(canvas,data){
+  if(!canvas||!canvas.getContext)return;
+  let c; try{c=canvas.getContext('2d');}catch(e){return;} if(!c)return;
+  const W=canvas.width=(canvas.offsetWidth||500)*2,H=canvas.height=180;
+  c.clearRect(0,0,W,H);const mn=Math.min(...data)*0.9,mx=Math.max(...data)*1.05;
+  c.beginPath();data.forEach((v,i)=>{const x=i/(data.length-1||1)*(W-20)+10,y=H-15-(v-mn)/(mx-mn)*(H-30);i?c.lineTo(x,y):c.moveTo(x,y);});
+  c.strokeStyle='#3DD9C0';c.lineWidth=4;c.stroke();
+  c.font='22px JetBrains Mono';c.fillStyle='#E9B44C';c.fillText('₹'+data.at(-1).toFixed(0),W-95,28);
+}
+function ceoRender(fresh){
+  const s=CEO.s,r=ceoRatios(s),root=document.getElementById('ceoRoot');
+  const gameOver=s.yr>6||!s.alive;
+  const picks=gameOver?[]:[...CEO_DECISIONS].sort(()=>Math.random()-.5).slice(0,3);
+  CEO.picks=picks;
+  root.innerHTML=`
+  <div class="ceo-top">
+    ${[['Year',s.alive?(s.yr>6?'Done':s.yr+' / 6'):'R.I.P.'],['Share price','₹'+s.price.toFixed(0)],['Revenue','₹'+s.rev.toFixed(0)+'Cr'],
+      ['Cash','₹'+s.cash.toFixed(0)+'Cr'],['Rating',s.rating]].map(k=>
+      `<div class="kpi"><div class="kl">${k[0]}</div><div class="kv">${k[1]}</div></div>`).join('')}
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="eyebrow" style="margin-bottom:8px">Share price</div>
+      <canvas class="spark" id="ceoSpark"></canvas>
+      <div class="divider"></div>
+      <div class="eyebrow" style="margin-bottom:8px">This year's statements (₹Cr)</div>
+      <table class="cmp-table">
+        <tr><td>Revenue</td><td class="num">${s.rev.toFixed(0)}</td><td>Equity</td><td class="num">${s.equity.toFixed(0)}</td></tr>
+        <tr><td>Operating profit</td><td class="num">${r.pbit.toFixed(0)}</td><td>Debt</td><td class="num">${s.debt.toFixed(0)}</td></tr>
+        <tr><td>Finance costs</td><td class="num hl-r">(${r.int.toFixed(0)})</td><td>Inventory days</td><td class="num">${Math.round(s.invDays)}</td></tr>
+        <tr><td>Profit after tax</td><td class="num hl-t">${r.pat.toFixed(0)}</td><td>Receivable days</td><td class="num">${Math.round(s.recDays)}</td></tr>
+      </table>
+      <div class="divider"></div>
+      <div class="ratio-board" style="grid-template-columns:repeat(auto-fill,minmax(120px,1fr))">
+        ${[['ROCE',fmt.pct(r.roce),r.roce>14?'up':r.roce<8?'down':''],['Gearing',fmt.pct(r.gear),r.gear>110?'down':r.gear<50?'up':''],
+           ['Int. cover',fmt.x1(r.icov),r.icov<2.5?'down':r.icov>6?'up':''],['EPS',fmt.money(r.eps),''],
+           ['Div cover',fmt.x1(Math.min(r.dcov,99)),r.dcov<1.4?'down':''],['Current',fmt.x(r.curr),r.curr<1?'down':'']].map(c=>
+        `<div class="rcell ${c[2]}"><div class="rl">${c[0]}</div><div class="rv">${c[1]}</div></div>`).join('')}
+      </div>
+    </div>
+    <div>
+      ${gameOver?
+        `<div class="card" style="text-align:center">
+          <h3 style="font-size:1.4rem;margin-bottom:8px">${s.alive?(s.price>110?'🏆 The market loved your tenure.':s.price>70?'A respectable stewardship.':'You survived. Barely.'):'💀 Administration.'}</h3>
+          <p class="muted">${s.alive?'Final share price ₹'+s.price.toFixed(0)+' vs ₹80 at the start. Read your news feed below like an examiner: every headline traces back to a ratio.':'Equity hit zero. Trace the chain in your news feed: it almost always runs debt → interest → cash → collapse.'}</p>
+          <button class="btn btn-pri" style="margin-top:14px" onclick="ceoStart()">Run it again</button>
+        </div>`
+      :`<div class="eyebrow" style="margin-bottom:8px">Year ${s.yr} — choose one move</div>
+        ${picks.map((p,i)=>`<div class="card decision" onclick="ceoPick(${i})"><h4>${p.t}</h4><p>${p.d}</p></div>`).join('')}`}
+      <div style="margin-top:16px"><div class="eyebrow" style="margin-bottom:4px">News & analyst wire</div>
+        <div id="ceoFeed">${s.feed.slice(0,6).map(f=>`<div class="news ${f.mood}"><span class="src">MARKET WIRE</span><b>${f.h}</b><br><span class="muted">${f.sub}</span></div>`).join('')}</div>
+      </div>
+    </div>
+  </div>`;
+  spark(document.getElementById('ceoSpark'),s.priceHist);
+  if(gameOver&&s.alive&&s.price>110)ach('ceo','Market Darling CEO');
+}
+function ceoPick(i){
+  CEO.picks[i].fx(CEO.s); ceoYearEnd(CEO.s); addXP(12,'A year survived'); ceoRender();
+}
+
+/* ==================================================== */
+/* INVESTOR MODE                                        */
+/* ==================================================== */
+const MATCHUPS=[
+ {a:{n:'Tesla',pe:'~70×',eps:'volatile',dy:'0%',dc:'n/a',g:'Explosive but lumpy',risk:'High — execution, competition, one personality'},
+  b:{n:'Coca-Cola',pe:'~24×',eps:'steady',dy:'~3%',dc:'~1.4×',g:'Low single digits, forever',risk:'Low — people drink in recessions too'},
+  v:'Tesla is the 19-year-old striker: the price assumes the future arrives on schedule. Coca-Cola is the veteran: modest expectations, dependable cash, 60+ years of dividend rises. Neither is "better" — a retiree needing income and a 22-year-old with 40 years of runway should rationally pick opposite sides.'},
+ {a:{n:'Apple',pe:'~30×',eps:'rising on buybacks + profit',dy:'~0.5%',dc:'>6×',g:'Mature, services-led',risk:'Moderate — hardware cycles'},
+  b:{n:'Microsoft',pe:'~33×',eps:'rising on cloud',dy:'~0.7%',dc:'>3×',g:'Cloud + AI compounding',risk:'Moderate — regulation, capex'},
+  v:'A matchup of titans where the ratios are nearly twins — which is itself the lesson: when P/E, yield and cover converge, the decision moves to qualitative ground: ecosystems, AI positioning, capital allocation style. Ratios narrow the question; they rarely finish it.'},
+ {a:{n:'Reliance Industries',pe:'~25×',eps:'conglomerate mix',dy:'~0.3%',dc:'high',g:'Retail + Jio optionality',risk:'Capex-heavy, oil cyclicality'},
+  b:{n:'TCS',pe:'~28×',eps:'high quality, predictable',dy:'~3%',dc:'~1.6×',g:'Steady global IT demand',risk:'Currency, client budgets'},
+  v:'Reliance reinvests nearly everything — tiny yield, huge optionality; you are paid in possibility. TCS converts profit into cash and mails much of it to you — capital-light, ROCE near 50%, generous payout. Growth-by-capex versus compounding-by-cash-machine: two great Indian answers to the same question.'},
+ {a:{n:'Titan',pe:'~80×',eps:'fast-growing',dy:'~0.3%',dc:'high',g:'Jewellery formalisation story',risk:'Priced for perfection'},
+  b:{n:'Asian Paints',pe:'~55×',eps:'pressured by new rivals',dy:'~0.8%',dc:'~2×',g:'Housing + repaint cycle',risk:'Competition (Birla Opus) biting'},
+  v:'Both trade at multiples that would make a US investor faint — Indian markets pay up for decades-long compounders. Titan\'s 80× demands flawless execution for years. Asian Paints shows what happens when a fortress meets a serious attacker: the P/E compresses as the growth story is questioned. High P/E is borrowed conviction — it must be repaid in earnings.'},
+];
+document.getElementById('invRoot').innerHTML=MATCHUPS.map((m,i)=>`
+  <div class="card" style="margin-bottom:18px">
+    <h3 style="font-size:1.2rem;margin-bottom:12px">${m.a.n} <span class="muted" style="font-family:var(--mono);font-size:.85rem">vs</span> ${m.b.n}</h3>
+    <table class="cmp-table">
+      <tr><th></th><th>${m.a.n}</th><th>${m.b.n}</th></tr>
+      ${[['P/E','pe'],['EPS trend','eps'],['Dividend yield','dy'],['Dividend cover','dc'],['Growth story','g'],['Risk','risk']].map(r=>
+        `<tr><td class="muted">${r[0]}</td><td class="num" style="white-space:normal">${m.a[r[1]]}</td><td class="num" style="white-space:normal">${m.b[r[1]]}</td></tr>`).join('')}
+    </table>
+    <div class="choice-row">
+      <button class="choice" onclick="invPick(${i},0,this)">I'd buy ${m.a.n}</button>
+      <button class="choice" onclick="invPick(${i},1,this)">I'd buy ${m.b.n}</button>
+      <button class="choice" onclick="invPick(${i},2,this)">Split between both</button>
+    </div>
+    <div class="reveal" id="invR${i}"><p>🎓 <b>The analyst's framing:</b> ${m.v}</p></div>
+  </div>`).join('');
+const invDone=new Set();
+function invPick(i,c,btn){
+  if(invDone.has(i))return; invDone.add(i);
+  btn.classList.add('picked-right');
+  document.getElementById('invR'+i).classList.add('on');
+  addXP(15,'Investment thesis formed');
+  if(invDone.size===MATCHUPS.length)ach('inv','Portfolio Thinker');
+}
+
+/* ==================================================== */
+/* DETECTIVE MODE                                       */
+/* ==================================================== */
+const CASES=[
+ {x:'"Revenue grew 64% this year as the Group extended credit terms to capture market share. Trade receivables rose from ₹40m to ₹118m and inventory doubled to support anticipated demand. The Group\'s overdraft facility was fully drawn at year end and short-term borrowings were arranged after the reporting date."',
+  o:['Healthy aggressive growth','Overtrading — expanding beyond its financing','Excessive dividend policy'],a:1,
+  e:'Every overtrading symptom is present: explosive revenue, receivables growing far faster than sales, stock piling "for demand", and a maxed overdraft. The business is growing itself to death — profit on paper, no cash in the bank.'},
+ {x:'"The Group renegotiated supplier terms during the year; trade payables days extended from 38 to 91 days. Several key suppliers have moved the Group to cash-on-delivery subsequent to year end. The current ratio declined from 1.4 to 0.7."',
+  o:['World-class supplier negotiation','Liquidity stress — paying late because it must','Improved working capital management'],a:1,
+  e:'Walmart stretches payables from strength; this firm stretches from weakness. The tell: suppliers retaliating with cash-on-delivery. Voluntary stretching wins discounts; involuntary stretching loses suppliers.'},
+ {x:'"Following the debt-funded acquisition of Northway plc, gearing rose from 45% to 168% and interest cover declined from 9.1× to 1.8×. The directors remain confident in the synergy programme. The interim dividend has been maintained."',
+  o:['Sensible expansion','Excessive gearing — fragile to any profit dip','Strong dividend sustainability'],a:1,
+  e:'Cover of 1.8× means profit barely clears interest before a single synergy is proven — and they\'re still paying the dividend. One soft trading year forces a cut, a covenant breach, or both. The word "confident" in this context is doing a lot of work.'},
+ {x:'"Operating margin improved from 9% to 13% as the Group exited loss-making contracts and automated its distribution centres. Revenue fell 4%; ROCE rose from 11% to 17%. Net debt was reduced by ₹60m from operating cash flows."',
+  o:['Business in decline — revenue is falling','Deliberate, healthy improvement in profitability','Aggressive accounting'],a:1,
+  e:'Falling revenue scares novices, but read the composition: they amputated bad business and kept the good. Margin, ROCE and debt all moved the right way, funded by real cash. Shrinking to greatness is a legitimate strategy — the ratios prove it.'},
+ {x:'"The Group opened 240 outlets across three new countries during the year, funded by supplier credit and short-term facilities. Like-for-like sales in existing stores fell 6%. Inventory days rose from 41 to 78."',
+  o:['Aggressive expansion masking weak core performance','Strong organic growth','Conservative management'],a:0,
+  e:'New stores can hide a rotting core: total revenue rises while existing stores decline 6%. Funding long-term expansion with short-term credit while stock piles up is how retail empires end. Always separate growth from acquisition/expansion vs growth from the existing estate.'},
+];
+document.getElementById('detRoot').innerHTML=CASES.map((c,i)=>`
+  <div class="card" style="margin-bottom:18px">
+    <div class="eyebrow" style="margin-bottom:10px">Case file ${i+1} of ${CASES.length}</div>
+    <div class="excerpt">${c.x}</div>
+    <p style="font-weight:600;margin-top:14px">Your diagnosis, detective?</p>
+    <div class="choice-row" id="detC${i}">${c.o.map((o,j)=>`<button class="choice" data-j="${j}">${o}</button>`).join('')}</div>
+    <div class="reveal" id="detR${i}"><p>🔍 ${c.e}</p></div>
+  </div>`).join('');
+const detDone=new Set();
+CASES.forEach((c,i)=>{
+  document.getElementById('detC'+i).addEventListener('click',e=>{
+    const b=e.target.closest('.choice'); if(!b||detDone.has(i))return; detDone.add(i);
+    document.querySelectorAll('#detC'+i+' .choice').forEach(ch=>{
+      if(+ch.dataset.j===c.a)ch.classList.add(ch===b?'picked-right':'show-right');
+      else if(ch===b)ch.classList.add('picked-wrong');
+    });
+    if(+b.dataset.j===c.a)addXP(20,'Correct diagnosis');else addXP(5,'Case reviewed');
+    document.getElementById('detR'+i).classList.add('on');
+    if(detDone.size===CASES.length)ach('det','Forensic Analyst');
+  });
+});
+
+/* ==================================================== */
+/* BOSS BATTLE QUIZ                                     */
+/* ==================================================== */
+const QUIZ=[
+ {q:'A company\'s revenue doubles but receivable days jump from 30 to 95. The most likely explanation?',o:['Stronger demand for its products','Growth bought with reckless credit terms','Better debt collection'],a:1},
+ {q:'Debt doubles while operating profit is unchanged. Interest cover will…',o:['Roughly halve','Double','Stay the same'],a:0},
+ {q:'Share price doubles; the dividend is unchanged. Dividend yield…',o:['Doubles','Halves','Unchanged'],a:1},
+ {q:'Profit is flat but EPS rose 12%. The most likely cause?',o:['A rights issue','A share buyback','Higher dividends'],a:1},
+ {q:'Current ratio of 0.8 is LEAST worrying for…',o:['A shipbuilder','A supermarket with daily cash sales','A property developer'],a:1},
+ {q:'ROCE can be decomposed into…',o:['Gearing × interest cover','Operating margin × net asset turnover','EPS × P/E'],a:1},
+ {q:'A P/E of 70× most directly tells you the market expects…',o:['A dividend cut','Strong earnings growth','High gearing'],a:1},
+ {q:'Payable days stretching from 40 to 100 while suppliers demand cash-on-delivery suggests…',o:['Negotiating strength','Financial distress','Improved efficiency'],a:1},
+ {q:'High gearing is most survivable for a firm with…',o:['Volatile, cyclical revenues','Stable, utility-like cash flows','A new unproven product'],a:1},
+ {q:'Dividend yield 9%, dividend cover 0.7×. This is most likely…',o:['An income investor\'s dream','A dividend trap about to snap shut','A growth stock'],a:1},
+];
+let QZ={i:0,hp:100,score:0,on:false};
+function quizRender(){
+  const root=document.getElementById('quizRoot');
+  if(!QZ.on){
+    root.innerHTML=`<div class="card bosswrap">
+      <div style="font-size:3rem">🧙‍♂️</div>
+      <h3 style="font-size:1.4rem">The Examiner</h3>
+      <p class="muted">"Fifteen ratios. Ten questions. Show me understanding, not memorisation."</p>
+      <button class="btn btn-pri" style="margin-top:14px" onclick="QZ={i:0,hp:100,score:0,on:true};quizRender()">Begin the battle</button>
+    </div>`; return;
+  }
+  if(QZ.i>=QUIZ.length){
+    const win=QZ.score>=7;
+    root.innerHTML=`<div class="card bosswrap">
+      <div style="font-size:3rem">${win?'🏆':'💪'}</div>
+      <h3 style="font-size:1.4rem">${win?'The Examiner concedes!':'The Examiner survives… this time.'}</h3>
+      <p class="muted">You scored ${QZ.score}/10. ${win?'That is distinction-level interpretation.':'Revisit the Learn path and the Lab — the chain reactions are where the answers live.'}</p>
+      <button class="btn btn-ghost" style="margin-top:14px" onclick="QZ.on=false;quizRender()">Rematch</button>
+    </div>`;
+    if(win){addXP(80,'Examiner defeated');ach('boss','Examiner Slayer');}
+    return;
+  }
+  const q=QUIZ[QZ.i];
+  root.innerHTML=`<div class="bosswrap">
+      <div style="font-size:2.2rem">🧙‍♂️</div>
+      <div class="bosshp"><div class="hp" style="width:${QZ.hp}%"></div></div>
+      <span class="mono" style="font-size:.72rem;color:var(--txt-3)">EXAMINER HP ${QZ.hp} · QUESTION ${QZ.i+1}/10</span>
+    </div>
+    <div class="card">
+      <p class="qtext">${q.q}</p>
+      <div class="choice-row" id="qzC">${q.o.map((o,j)=>`<button class="choice" data-j="${j}">${o}</button>`).join('')}</div>
+    </div>`;
+  document.getElementById('qzC').onclick=e=>{
+    const b=e.target.closest('.choice'); if(!b)return;
+    const right=+b.dataset.j===q.a;
+    document.querySelectorAll('#qzC .choice').forEach(ch=>{
+      if(+ch.dataset.j===q.a)ch.classList.add(ch===b?'picked-right':'show-right');
+      else if(ch===b)ch.classList.add('picked-wrong');
+    });
+    if(right){QZ.score++;QZ.hp-=10;toast('⚔️ Direct hit!');}else toast('🛡 The Examiner blocks!');
+    setTimeout(()=>{QZ.i++;quizRender();},1100);
+  };
+}
+quizRender();
+
+/* ==================================================== */
+/* ADVANCED INSIGHTS                                    */
+/* ==================================================== */
+const insRoot=document.getElementById('insRoot');
+insRoot.innerHTML=`
+ <div class="card">
+   <div class="eyebrow" style="margin-bottom:6px">The master equation</div>
+   <div class="formula-box"><span class="fl">DuPont decomposition</span>ROCE = Operating margin × Net asset turnover</div>
+   <p class="muted">Two utterly different businesses can earn the identical ROCE. Drag the strategy slider between "luxury house" and "supermarket" and watch margin and turnover trade places while ROCE barely moves.</p>
+   <div class="slider-row" style="margin-top:16px">
+     <label>Strategy <b id="dpLabel">Balanced</b></label>
+     <input type="range" min="0" max="100" value="50" id="dpSlide" oninput="dupont()">
+     <div class="gauge-cap"><span>🛍 Luxury — fat margin, slow assets</span><span>🛒 Supermarket — thin margin, fast assets</span></div>
+   </div>
+   <div class="ratio-board" style="margin-top:14px">
+     <div class="rcell"><div class="rl">Operating margin</div><div class="rv" id="dpM">—</div></div>
+     <div class="rcell"><div class="rl">Asset turnover</div><div class="rv" id="dpT">—</div></div>
+     <div class="rcell" style="border-color:var(--gold)"><div class="rl">ROCE</div><div class="rv hl-g" id="dpR">—</div></div>
+   </div>
+ </div>
+ <div class="grid2" style="margin-top:16px">
+  ${[
+   ['Why a low dividend yield can be bullish','Yield falls when the price rises faster than the dividend. Amazon paid 0% for 25 years while making patient shareholders rich — the cash was compounding inside the business instead of leaving it.'],
+   ['Why a high current ratio can be bad','A ratio of 5× often means cash idling, stock rotting and receivables ageing. Working capital is unpaid-for efficiency — hoarding it drags ROCE down. Healthy ≠ maximal.'],
+   ['Why rising payable days cuts both ways','From strength (Walmart) it\'s free supplier financing. From weakness it\'s the first public symptom of a cash crisis. The current ratio and supplier behaviour tell you which story you\'re in.'],
+   ['Why geared firms amplify everything','Interest is fixed; profit is not. When PBIT rises 20%, equity holders of a geared firm might see EPS rise 40%. When PBIT falls 20%, the same arithmetic runs in reverse — and interest is still due.'],
+   ['Why industry comparison is non-negotiable','Titan\'s 200 inventory days would bankrupt a fishmonger. Walmart\'s 0.8 current ratio would terrify a shipbuilder. A ratio without an industry benchmark is a number without a sentence.'],
+   ['Why no ratio stands alone','High yield looks great until cover is 0.7×. Soaring revenue looks great until receivable days double. Every ratio is one witness; verdicts need corroboration. Examiners award marks for the connections, not the calculations.'],
+  ].map(c=>`<div class="card"><h3 style="font-size:1.02rem;margin-bottom:8px">💡 ${c[0]}</h3><p class="muted">${c[1]}</p></div>`).join('')}
+ </div>`;
+function dupont(){
+  const v=+document.getElementById('dpSlide').value/100;
+  const m=28-22*v, t=0.7+3.1*v, r=m*t;
+  document.getElementById('dpM').textContent=m.toFixed(1)+'%';
+  document.getElementById('dpT').textContent=t.toFixed(2)+'×';
+  document.getElementById('dpR').textContent=r.toFixed(1)+'%';
+  document.getElementById('dpLabel').textContent=v<0.33?'Luxury house':v>0.67?'Supermarket':'Balanced';
+}
+dupont();
+
+/* ==================================================== */
+/* AI TUTOR (Socratic)                                  */
+/* ==================================================== */
+const TUTOR_HIST=[];
+const TUTOR_SYS=`You are Priya, a warm Socratic finance mentor inside an ACCA FR ratio-analysis learning site for 19-22 year old beginners. NEVER give a direct answer immediately. Instead: (1) acknowledge briefly, (2) ask ONE guiding question or give ONE hint using an everyday analogy (water tanks, EMIs, fridges, football transfers), (3) only after the student has attempted reasoning across turns, confirm and crisply summarise the concept. Gently correct misconceptions. Keep replies under 120 words. Use the occasional Indian-context example (TCS, Titan, ITC, Reliance) alongside global ones (Apple, Costco, Coca-Cola). Stay strictly on finance/accounting education.`;
+async function tutorSend(){
+  const box=document.getElementById('tutorBox'), log=document.getElementById('tutorLog');
+  const text=box.value.trim(); if(!text)return; box.value='';
+  log.insertAdjacentHTML('beforeend',`<div class="msg user"></div>`);
+  log.lastElementChild.textContent=text;
+  TUTOR_HIST.push({role:'user',content:text});
+  log.insertAdjacentHTML('beforeend',`<div class="msg bot" id="tThink">Priya is thinking…</div>`);
+  log.scrollTop=log.scrollHeight;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
+        messages:[{role:'user',content:TUTOR_SYS},{role:'assistant',content:'Understood. I am Priya, the Socratic mentor. I will guide with questions, not answers.'},...TUTOR_HIST]})});
+    const data=await res.json();
+    const reply=(data.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('\n')||'Hmm, I lost my train of thought — ask me again?';
+    TUTOR_HIST.push({role:'assistant',content:reply});
+    document.getElementById('tThink').remove();
+    log.insertAdjacentHTML('beforeend',`<div class="msg bot"></div>`);
+    log.lastElementChild.textContent=reply;
+  }catch(err){
+    document.getElementById('tThink').textContent='I can\'t reach my brain right now (connection issue). Meanwhile — here\'s a Socratic nudge: whatever ratio you\'re stuck on, ask "what would make this number rise, and who would celebrate?" That question solves half of FR.';
+  }
+  log.scrollTop=log.scrollHeight;
+  addXPOnce('tutor','First mentor conversation',10);
+}
+</script>
+</body>
+</html>
