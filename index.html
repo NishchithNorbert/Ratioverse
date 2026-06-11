@@ -3,15 +3,23 @@
 <head>
   <script>
     window.addEventListener('load',function(){
-        function routeFromHash(){
-              var h=(location.hash||'').replace('#','').trim();
-              if(!h)return;
-                    var views={home:1,learn:1,lab:1,ceo:1,investor:1,detective:1,quiz:1,insights:1};
-              try{
-                      if(views[h]){if(typeof go==='function')go(h);}
-                              else{if(typeof go==='function')go('learn');if(typeof openLesson==='function')openLesson(h);}
-              }catch(e){}
-        }
+function routeFromHash(){
+  var h=(location.hash||'').replace('#','').trim();
+  if(!h)return;
+  var views={home:1,learn:1,lab:1,ceo:1,investor:1,detective:1,quiz:1,insights:1};
+  try{
+    if(views[h]){if(typeof go==='function')go(h);return;}
+    var m=h.match(/^([a-z]+)-?(\d+)?$/i);
+    var id=m?m[1]:h;
+    var step=(m&&m[2])?parseInt(m[2],10)-1:0;
+    if(typeof RATIOS!=='undefined'&&RATIOS.find(function(r){return r.id===id;})){
+      if(typeof go==='function')go('learn');
+      if(typeof openLesson==='function')openLesson(id);
+      if(typeof Lstep!=='undefined')Lstep=Math.max(0,Math.min(step,4));
+      if(typeof renderLesson==='function')renderLesson();
+    }
+  }catch(e){}
+}
         routeFromHash();
         window.addEventListener('hashchange',routeFromHash);
     });
