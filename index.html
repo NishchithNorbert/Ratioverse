@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    window.addEventListener('load',function(){
+        function routeFromHash(){
+              var h=(location.hash||'').replace('#','').trim();
+              if(!h)return;
+                    var views={home:1,learn:1,lab:1,ceo:1,investor:1,detective:1,quiz:1,insights:1};
+              try{
+                      if(views[h]){if(typeof go==='function')go(h);}
+                              else{if(typeof go==='function')go('learn');if(typeof openLesson==='function')openLesson(h);}
+              }catch(e){}
+        }
+        routeFromHash();
+        window.addEventListener('hashchange',routeFromHash);
+    });
+  </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RatioVerse — Ratio Analysis, Alive</title>
